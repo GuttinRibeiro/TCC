@@ -1,3 +1,4 @@
+*.pb.*
 devel/
 logs/
 build/
