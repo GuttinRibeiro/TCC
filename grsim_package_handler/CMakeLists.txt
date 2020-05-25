@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
 project(grsim_package_handler)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+cmake_policy(SET CMP0071 NEW)
+
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+endif()
+
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -9,14 +19,22 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Protobuf REQUIRED)
 
-add_executable(grsim_node src/grsim_node.cpp)
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS src/messages_robocup_ssl_detection.proto
+src/messages_robocup_ssl_geometry.proto
+src/messages_robocup_ssl_refbox_log.proto
+src/messages_robocup_ssl_wrapper.proto)
+
+add_executable(grsim_node src/grsim_node.cpp ${PROTO_SRCS} ${PROTO_HDRS} src/robocup_ssl_client.cpp src/netraw.cpp)
 
 target_include_directories(grsim_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-target_link_libraries(grsim_node Qt5::Widgets)
+target_link_libraries(grsim_node Qt5::Widgets ${Protobuf_LIBRARIES})
 
 install(TARGETS grsim_node
   EXPORT export_${PROJECT_NAME}
