@@ -20,6 +20,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Protobuf REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
 
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -28,7 +30,9 @@ src/messages_robocup_ssl_geometry.proto
 src/messages_robocup_ssl_refbox_log.proto
 src/messages_robocup_ssl_wrapper.proto)
 
-add_executable(grsim_node src/grsim_node.cpp ${PROTO_SRCS} ${PROTO_HDRS} src/robocup_ssl_client.cpp src/netraw.cpp)
+add_executable(grsim_node src/grsim_node.cpp ${PROTO_SRCS} ${PROTO_HDRS} 
+src/robocup_ssl_client.cpp src/netraw.cpp src/vision_pub.cpp)
+ament_target_dependencies(grsim_node rclcpp std_msgs)
 
 target_include_directories(grsim_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

@@ -4,6 +4,8 @@
 #include <memory>
 #include <QApplication>
 #include "robocup_ssl_client.h"
+#include "rclcpp/rclcpp.hpp"
+#include "vision_pub.hpp"
 
 RoboCupSSLClient * init_connection(int port = 10006, string net_ref_address="224.5.23.2", string net_ref_interface="") {
   RoboCupSSLClient *_client = new RoboCupSSLClient(port, net_ref_address, net_ref_interface);  
@@ -30,11 +32,10 @@ void close_connection(RoboCupSSLClient *client) {
 }
 
 int main(int argc, char ** argv) {
-  (void) argc;
-  (void) argv;
-
   RoboCupSSLClient *vision = init_connection(); 
-
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<VisionNode>(vision));
+  rclcpp::shutdown();
   close_connection(vision);
   return 0;
 }
