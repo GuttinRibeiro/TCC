@@ -12,7 +12,7 @@ VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     // Nota: achei muito estranho isso de bindar com um timer. Tentei criar uma thread, mas
     // programa crasha. Checar como o client da visão funciona, provavelmente terei que jogar
     // um tempo minúsculo aqui.
-    _timer = this->create_wall_timer(10ms, std::bind(&VisionNode::client_callback, this));
+    _timer = this->create_wall_timer(5ms, std::bind(&VisionNode::client_callback, this));
 }
 
 void VisionNode::client_callback() {
@@ -44,7 +44,7 @@ void VisionNode::client_callback() {
     // Create and publish a message to each topic
     auto message = std_msgs::msg::String();
     message.data = "Publishing!";
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+    //RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     _publisher->publish(message);
 }
 
@@ -58,25 +58,32 @@ void VisionNode::update() {
 
 void VisionNode::processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls) {
 
-
-    // Add objects to multi object filtering
+    // Merge multiple balls
     QList<std::pair<int,SSL_DetectionBall> >::const_iterator it;
-    RCLCPP_INFO(this->get_logger(), "Number of balls: %d", balls.size());
+    int numBalls = balls.size();
+    float realX = 0.0;
+    float realY = 0.0;
+    //RCLCPP_INFO(this->get_logger(), "Number of balls: %d", balls.size());
     for(it=balls.constBegin(); it!=balls.constEnd(); it++) {
         const int camId = it->first;
         const SSL_DetectionBall ball = it->second;
 
-        float realX = ball.x()*MM2METER;
-        float realY = ball.y()*MM2METER;
+        realX += ball.x()*MM2METER;
+        realY += ball.y()*MM2METER;
 
         // Confidence
         if(ball.has_confidence()==false)
             continue;
 
-        // Print ball position
-        std::cout << "Ball pos: " << ball.x()*MM2METER << ", " << ball.y()*MM2METER << "\n";
+        // [DEBUG] Print ball position
+        //std::cout << "[Before merge] Ball pos: " << ball.x()*MM2METER << ", " << ball.y()*MM2METER << "\n";
     }
 
+    Position ballAux(realX/numBalls, realY/numBalls, 0.0, false);
+    _ball = ballAux;
+
+    // [DEBUG] Print ball position
+    //std::cout << "[After merge] Ball pos: " << _ball.x() << ", " << _ball.y() << "\n";
 }
 
 QList<std::pair<int,SSL_DetectionBall> > VisionNode::parseCamerasBalls(const QList<SSL_DetectionFrame> &detectionFrames) const {
