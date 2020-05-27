@@ -1,4 +1,5 @@
-
+#ifndef POSITION_HH
+#define POSITION_HH
 
 class Position {
     private:
@@ -49,3 +50,5 @@ class Position {
             return Position(this->x()-pos.x(), this->y()-pos.y(), this->z()-pos.z());
         }
 };
+
+#endif

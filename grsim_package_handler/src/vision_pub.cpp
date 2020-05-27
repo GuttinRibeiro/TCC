@@ -13,6 +13,7 @@ VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     // programa crasha. Checar como o client da visão funciona, provavelmente terei que jogar
     // um tempo minúsculo aqui.
     _timer = this->create_wall_timer(5ms, std::bind(&VisionNode::client_callback, this));
+    _ball = Position();
 }
 
 void VisionNode::client_callback() {
@@ -54,6 +55,7 @@ void VisionNode::update() {
     QHash<int,std::pair<int,SSL_DetectionRobot> > robots = parseCamerasRobots(_detectionPackets.values());
 
     processBalls(balls);
+    processRobots(robots);
 }
 
 void VisionNode::processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls) {
@@ -84,6 +86,10 @@ void VisionNode::processBalls(const QList<std::pair<int,SSL_DetectionBall> > &ba
 
     // [DEBUG] Print ball position
     //std::cout << "[After merge] Ball pos: " << _ball.x() << ", " << _ball.y() << "\n";
+}
+
+void VisionNode::processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot> > &robots) {
+
 }
 
 QList<std::pair<int,SSL_DetectionBall> > VisionNode::parseCamerasBalls(const QList<SSL_DetectionFrame> &detectionFrames) const {
