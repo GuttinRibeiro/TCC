@@ -28,7 +28,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Robot.msg"
   "msg/Ball.msg"
-  #"msg/visionpkg.msg"
+  "msg/Visionpkg.msg"
  )
 
 include_directories(${Protobuf_INCLUDE_DIRS})
@@ -52,5 +52,8 @@ target_link_libraries(grsim_node Qt5::Widgets ${Protobuf_LIBRARIES})
 install(TARGETS grsim_node
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
+
+rosidl_target_interfaces(grsim_node
+  ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ament_package()

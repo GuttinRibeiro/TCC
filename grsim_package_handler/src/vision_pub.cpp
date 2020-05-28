@@ -4,6 +4,7 @@
 #include <QList>
 #include <iostream>
 #define MAX_ROBOTS 6
+#define PI 3.14159265358
 
 using namespace std::chrono_literals;
 
@@ -16,12 +17,12 @@ enum Colors {
 VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     // Yellow robots
     for(int i = 0; i < MAX_ROBOTS; i++) {
-        _publisherYellow.append(this->create_publisher<std_msgs::msg::String>("yellow_"+std::to_string(i), 10));
+        _publisherYellow.insert(i, this->create_publisher<grsim_package_handler::msg::Visionpkg>("yellow_"+std::to_string(i), 10));
     }
 
     // Blue robots
     for(int i = 0; i < MAX_ROBOTS; i++) {
-        _publisherBlue.append(this->create_publisher<std_msgs::msg::String>("blue_"+std::to_string(i), 10));
+        _publisherBlue.insert(i, this->create_publisher<grsim_package_handler::msg::Visionpkg>("blue_"+std::to_string(i), 10));
     }
 
     _client = client;
@@ -58,12 +59,26 @@ void VisionNode::client_callback() {
     }
 
     // TODO: split info into topics
+    split_packages();
 
     // Create and publish a message to each topic
     //auto message = std_msgs::msg::String();
     //message.data = "Publishing!";
     //RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     //_publisher->publish(message);
+}
+
+void VisionNode::split_packages() {
+    // Blue team:
+    QList<qint8> ids = _blueTeam.keys();
+    for(int i = 0; i < ids.size(); i++) {
+        Robot selected = _blueTeam.value(ids[i]);
+        for(int j = 0; j < ids.size(); j++) {
+            if(j != i) {
+                
+            }
+        }
+    }
 }
 
 void VisionNode::update() {
@@ -160,7 +175,8 @@ QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRo
         if(numOri > 0) {
             aux.setOrientation(realOri/numFrames);
         }
-
+        Sensor sen("camera", 0.0, -PI/4, PI/4);
+        aux.addSensor(sen);
         ret.insert((char) i, aux);
     }
 
