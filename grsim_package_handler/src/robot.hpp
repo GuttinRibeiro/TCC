@@ -1,6 +1,8 @@
 #ifndef ROBOT_HH
 #define ROBOT_HH
 #include "position.hpp"
+#include "sensor.hpp"
+#include <QList>
 
 class Robot {
     private:
@@ -9,6 +11,7 @@ class Robot {
         qint8 _id;
         int _team;
         bool _hasOri;
+        QList<Sensor> _sensorSet;
 
     public:
         Robot() {
@@ -38,12 +41,14 @@ class Robot {
         float orientation() {return _ori;}
         qint8 id() {return _id;}
         int team() {return _team;}
+        QList<Sensor> sensorSet() {return _sensorSet;}
 
         void setPosition(Position pos) {_pos = pos;}
         void setOrientation(float ori) {_ori = ori; _hasOri = true;}
         void clearOrientation() {_hasOri = false;}
         void setId(qint8 id) {_id = id;}
         void setTeam(int team) {_team = team;}
+        void addSensor(Sensor sensor) {_sensorSet.append(sensor);}
 };
 
 #endif

@@ -3,11 +3,27 @@
 #include <memory>
 #include <QList>
 #include <iostream>
+#define MAX_ROBOTS 6
 
 using namespace std::chrono_literals;
 
+enum Colors {
+    BLUE,
+    YELLOW
+};
+
+
 VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
-    _publisher = this->create_publisher<std_msgs::msg::String>("yellow_1", 10);
+    // Yellow robots
+    for(int i = 0; i < MAX_ROBOTS; i++) {
+        _publisherYellow.append(this->create_publisher<std_msgs::msg::String>("yellow_"+std::to_string(i), 10));
+    }
+
+    // Blue robots
+    for(int i = 0; i < MAX_ROBOTS; i++) {
+        _publisherBlue.append(this->create_publisher<std_msgs::msg::String>("blue_"+std::to_string(i), 10));
+    }
+
     _client = client;
     // Nota: achei muito estranho isso de bindar com um timer. Tentei criar uma thread, mas
     // programa crasha. Checar como o client da visão funciona, provavelmente terei que jogar
@@ -41,12 +57,13 @@ void VisionNode::client_callback() {
         update();
     }
 
+    // TODO: split info into topics
 
     // Create and publish a message to each topic
-    auto message = std_msgs::msg::String();
-    message.data = "Publishing!";
+    //auto message = std_msgs::msg::String();
+    //message.data = "Publishing!";
     //RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-    _publisher->publish(message);
+    //_publisher->publish(message);
 }
 
 void VisionNode::update() {
@@ -56,6 +73,11 @@ void VisionNode::update() {
 
     processBalls(balls);
     processRobots(robots);
+
+    //[Debug]
+    //Robot aux = _blueTeam.value(5);
+    //std::cout << "Blue robot 5: " << aux.position().x() << ", " << aux.position().y() << "\n";
+    //std::cout << "Blue robot 5: " << aux.orientation() << "\n";
 }
 
 void VisionNode::processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls) {
@@ -89,7 +111,60 @@ void VisionNode::processBalls(const QList<std::pair<int,SSL_DetectionBall> > &ba
 }
 
 void VisionNode::processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot> > &robots) {
+    QList<std::pair<int, SSL_DetectionRobot>> yellowTeam = robots.values(Colors::YELLOW);
+    QList<std::pair<int, SSL_DetectionRobot>> blueTeam = robots.values(Colors::BLUE);
 
+    _yellowTeam = processTeam(yellowTeam);
+    _blueTeam = processTeam(blueTeam);
+}
+
+QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobot>> team) {
+    float realX = 0;
+    float realY = 0;
+    float realOri = 0;
+    int numFrames = 0;
+    int numOri = 0;
+    QHash<qint8, Robot> ret;
+
+    // For each id:
+    for(unsigned i = 0; i < MAX_ROBOTS; i++) {
+        QList<std::pair<int,SSL_DetectionRobot> >::iterator it;
+
+        // Sum the coordinates of each frame for the same robot and apply a mean
+        realX = 0.0;
+        realY = 0.0;
+        realOri = 0.0;
+        numFrames = 0;
+        numOri = 0;
+        for(it=team.begin(); it!=team.end(); it++) {
+            const SSL_DetectionRobot robot = it->second;
+
+            // Discard tobots with wrong id
+            if(robot.robot_id() != i || robot.has_confidence() == false) {
+                continue;
+            }
+
+            if(robot.has_x() && robot.has_y()) {
+                realX += robot.x()*MM2METER;
+                realY += robot.y()*MM2METER;
+                numFrames++;
+                if(robot.has_orientation()) {
+                    realOri += robot.orientation();
+                    numOri++;
+                }
+            }
+        }
+
+        Position pos(realX/numFrames, realY/numFrames, 0.0, false);
+        Robot aux(pos, -1, (char) i);
+        if(numOri > 0) {
+            aux.setOrientation(realOri/numFrames);
+        }
+
+        ret.insert((char) i, aux);
+    }
+
+    return ret;
 }
 
 QList<std::pair<int,SSL_DetectionBall> > VisionNode::parseCamerasBalls(const QList<SSL_DetectionFrame> &detectionFrames) const {
@@ -107,11 +182,6 @@ QList<std::pair<int,SSL_DetectionBall> > VisionNode::parseCamerasBalls(const QLi
 
     return retn;
 }
-
-enum Colors {
-    BLUE,
-    YELLOW
-};
 
 QHash<int,std::pair<int,SSL_DetectionRobot> > VisionNode::parseCamerasRobots(const QList<SSL_DetectionFrame> &detectionFrames) const {
     QHash<int,std::pair<int,SSL_DetectionRobot> > retn;

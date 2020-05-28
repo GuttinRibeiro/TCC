@@ -15,7 +15,8 @@ class VisionNode : public rclcpp::Node {
     private:
         RoboCupSSLClient *_client;
         rclcpp::TimerBase::SharedPtr _timer;
-        rclcpp::Publisher<std_msgs::msg::String>::SharedPtr _publisher;
+        QList<rclcpp::Publisher<std_msgs::msg::String>::SharedPtr> _publisherYellow;
+        QList<rclcpp::Publisher<std_msgs::msg::String>::SharedPtr> _publisherBlue;
         QHash<int, SSL_DetectionFrame> _detectionPackets;
         SSL_GeometryData _geometryPacket;
         Position _ball;
@@ -29,6 +30,7 @@ class VisionNode : public rclcpp::Node {
         QHash<int,std::pair<int,SSL_DetectionRobot> > parseCamerasRobots(const QList<SSL_DetectionFrame> &detectionFrames) const;
         void processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls);
         void processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot> > &robots);
+        QHash<qint8, Robot> processTeam(QList<std::pair<int, SSL_DetectionRobot>> team);
 
     public:
         VisionNode(RoboCupSSLClient *client);

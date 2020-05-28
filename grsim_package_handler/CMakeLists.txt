@@ -23,6 +23,14 @@ find_package(Protobuf REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Robot.msg"
+  "msg/Ball.msg"
+  #"msg/visionpkg.msg"
+ )
+
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS src/messages_robocup_ssl_detection.proto
@@ -30,6 +38,7 @@ src/messages_robocup_ssl_geometry.proto
 src/messages_robocup_ssl_refbox_log.proto
 src/messages_robocup_ssl_wrapper.proto)
 
+ament_export_dependencies(rosidl_default_runtime)
 add_executable(grsim_node src/grsim_node.cpp ${PROTO_SRCS} ${PROTO_HDRS} 
 src/robocup_ssl_client.cpp src/netraw.cpp src/vision_pub.cpp)
 ament_target_dependencies(grsim_node rclcpp std_msgs)
