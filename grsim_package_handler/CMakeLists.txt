@@ -40,7 +40,7 @@ src/messages_robocup_ssl_wrapper.proto)
 
 ament_export_dependencies(rosidl_default_runtime)
 add_executable(grsim_node src/grsim_node.cpp ${PROTO_SRCS} ${PROTO_HDRS} 
-src/robocup_ssl_client.cpp src/netraw.cpp src/vision_pub.cpp)
+src/robocup_ssl_client.cpp src/netraw.cpp src/vision_pub.cpp src/utils.cpp)
 ament_target_dependencies(grsim_node rclcpp std_msgs)
 
 target_include_directories(grsim_node PUBLIC

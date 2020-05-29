@@ -12,6 +12,14 @@ class Sensor {
         QString _name;
 
     public:
+        Sensor() {
+            _name = "NULL";
+            _minRange = 0.0;
+            _maxRange = 0.0;
+            _maxAngle = 0.0;
+            _minAngle = 0.0;            
+        }
+
         Sensor(QString name) {
             _name = name;
             _minRange = 0.0;

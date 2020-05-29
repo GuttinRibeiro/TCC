@@ -1,4 +1,5 @@
 #include "vision_pub.hpp"
+#include "utils.hpp"
 #include <chrono>
 #include <memory>
 #include <QList>
@@ -29,6 +30,7 @@ VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     // Nota: achei muito estranho isso de bindar com um timer. Tentei criar uma thread, mas
     // programa crasha. Checar como o client da visão funciona, provavelmente terei que jogar
     // um tempo minúsculo aqui.
+    clock_gettime(CLOCK_REALTIME, &_start);
     _timer = this->create_wall_timer(5ms, std::bind(&VisionNode::client_callback, this));
     _ball = Position();
 }
@@ -38,6 +40,7 @@ void VisionNode::client_callback() {
 
     // Wait for package
     if(_client->receive(packet)){
+
         if(packet.has_detection()) {
             // Get data
             SSL_DetectionFrame currDetection = packet.detection();
@@ -68,17 +71,167 @@ void VisionNode::client_callback() {
     //_publisher->publish(message);
 }
 
+
+// Welcome to the hell!
 void VisionNode::split_packages() {
-    // Blue team:
-    QList<qint8> ids = _blueTeam.keys();
+    // Publish messages for blue robots:
+    QList<int> ids = _blueTeam.keys();
     for(int i = 0; i < ids.size(); i++) {
+        auto message = grsim_package_handler::msg::Visionpkg();
         Robot selected = _blueTeam.value(ids[i]);
+
+        // Its own position:
+        auto rob_msg = grsim_package_handler::msg::Robot();
+        rob_msg.x = selected.position().x();
+        rob_msg.y = selected.position().y();
+        rob_msg.id = selected.id();
+        rob_msg.team = "blue";
+        message.robots.push_back(rob_msg);
+
+        // Blue team:
         for(int j = 0; j < ids.size(); j++) {
             if(j != i) {
-                
+                Robot rob = _blueTeam.value(ids[j]);
+
+                // If rob is within sensor range:
+                if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
+                    float angle = Utils::getAngle(selected.position(), rob.position());
+                    if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                        //[TODO] Check for obstruction:
+                        auto rob_msg = grsim_package_handler::msg::Robot();
+                        rob_msg.x = rob.position().x();
+                        rob_msg.y = rob.position().y();
+                        rob_msg.id = rob.id();
+                        rob_msg.team = "blue";
+                        message.robots.push_back(rob_msg);
+                    }
+                }
             }
         }
+
+        // Yellow team:
+        for(int j = 0; j < ids.size(); j++) {
+            Robot rob = _yellowTeam.value(ids[j]);
+
+            // If rob is within sensor range:
+            if(ids[j] == 3 && ids[i] == 3) {
+                std::cout << "MinRange: " << selected.getSensor().minRange() << "\n";
+                std::cout << "MaxRange: " << selected.getSensor().maxRange() << "\n";
+                std::cout << "Rob: " << rob.position().x() << ", " << rob.position().y() << "\n";
+                std::cout << "Selected: " << selected.position().x() << ", " << selected.position().y() << "\n";
+                std::cout << "Distance: " << Utils::distance(selected.position(), rob.position()) << "\n";
+                std::cout << "Distance condition: " << Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position())) << "\n";
+                float angle = Utils::getAngle(rob.position(), selected.position());
+                std::cout << "Angular condiiton: " << Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle) << "\n";
+                std::cout << "Min angle lim: " << selected.orientation()+selected.getSensor().minAngle() << "\n";
+                std::cout << "Max angle lim: " << selected.orientation()+selected.getSensor().maxAngle() << "\n";
+                std::cout << "Angle: " << angle << "\n";
+            }
+            
+            if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
+                float angle = Utils::getAngle(selected.position(), rob.position());
+                if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                    //[TODO] Check for obstruction:
+                    auto rob_msg = grsim_package_handler::msg::Robot();
+                    rob_msg.x = rob.position().x();
+                    rob_msg.y = rob.position().y();
+                    rob_msg.id = rob.id();
+                    rob_msg.team = "yellow";
+                    message.robots.push_back(rob_msg);
+                }
+            }
+        }
+
+        // Ball:
+        // If the ball is within sensor range:
+        if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), _ball))) {
+            float angle = Utils::getAngle(selected.position(), _ball);
+            if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                //[TODO] Check for obstruction:
+                auto ball_msg = grsim_package_handler::msg::Ball();
+                ball_msg.x = _ball.x();
+                ball_msg.y = _ball.y();
+                message.balls.push_back(ball_msg);
+            }
+        }
+
+        // Publish the desired (I guess) message:
+        clock_gettime(CLOCK_REALTIME, &_stop);
+        message.timestamp = ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
+        _publisherBlue.value(ids[i])->publish(message);
     }
+
+    //Publish messages for yellow robots:
+    ids = _yellowTeam.keys();
+    for(int i = 0; i < ids.size(); i++) {
+        auto message = grsim_package_handler::msg::Visionpkg();
+        Robot selected = _yellowTeam.value(ids[i]);
+
+        // Its own position:
+        auto rob_msg = grsim_package_handler::msg::Robot();
+        rob_msg.x = selected.position().x();
+        rob_msg.y = selected.position().y();
+        rob_msg.id = selected.id();
+        rob_msg.team = "yellow";
+        message.robots.push_back(rob_msg);
+
+        // Blue team:
+        for(int j = 0; j < ids.size(); j++) {
+            Robot rob = _blueTeam.value(j);
+
+            // If rob is within sensor range:
+            if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
+                float angle = Utils::getAngle(selected.position(), rob.position());
+                if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                    //[TODO] Check for obstruction:
+                    auto rob_msg = grsim_package_handler::msg::Robot();
+                    rob_msg.x = rob.position().x();
+                    rob_msg.y = rob.position().y();
+                    rob_msg.id = rob.id();
+                    rob_msg.team = "blue";
+                    message.robots.push_back(rob_msg);
+                }
+            }
+        }
+
+        // Yellow team:
+        for(int j = 0; j < ids.size(); j++) {
+            if(j != i) {
+                Robot rob = _yellowTeam.value(j);
+
+                // If rob is within sensor range:
+                if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
+                    float angle = Utils::getAngle(selected.position(), rob.position());
+                    if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                        //[TODO] Check for obstruction:
+                        auto rob_msg = grsim_package_handler::msg::Robot();
+                        rob_msg.x = rob.position().x();
+                        rob_msg.y = rob.position().y();
+                        rob_msg.id = rob.id();
+                        rob_msg.team = "yellow";
+                        message.robots.push_back(rob_msg);
+                }
+            }
+            }
+        }
+
+        // Ball:
+        // If the ball is within sensor range:
+        if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), _ball))) {
+            float angle = Utils::getAngle(selected.position(), _ball);
+            if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                //[TODO] Check for obstruction:
+                auto ball_msg = grsim_package_handler::msg::Ball();
+                ball_msg.x = _ball.x();
+                ball_msg.y = _ball.y();
+                message.balls.push_back(ball_msg);
+            }
+        }
+
+        // Publish the desired (I guess) message:
+        _publisherYellow.value(i)->publish(message);
+    }    
+
 }
 
 void VisionNode::update() {
@@ -133,13 +286,13 @@ void VisionNode::processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot
     _blueTeam = processTeam(blueTeam);
 }
 
-QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobot>> team) {
+QHash<int, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobot>> team) {
     float realX = 0;
     float realY = 0;
     float realOri = 0;
     int numFrames = 0;
     int numOri = 0;
-    QHash<qint8, Robot> ret;
+    QHash<int, Robot> ret;
 
     // For each id:
     for(unsigned i = 0; i < MAX_ROBOTS; i++) {
@@ -171,13 +324,13 @@ QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRo
         }
 
         Position pos(realX/numFrames, realY/numFrames, 0.0, false);
-        Robot aux(pos, -1, (char) i);
+        Robot aux(pos, -1, i);
         if(numOri > 0) {
             aux.setOrientation(realOri/numFrames);
         }
-        Sensor sen("camera", 0.0, -PI/4, PI/4);
+        Sensor sen("camera", 20.0, -PI/4, PI/4);
         aux.addSensor(sen);
-        ret.insert((char) i, aux);
+        ret.insert(i, aux);
     }
 
     return ret;

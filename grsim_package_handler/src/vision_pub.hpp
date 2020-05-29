@@ -2,6 +2,7 @@
 #define VISION_PUB
 
 #include <QHash>
+#include <ctime>
 #include "robocup_ssl_client.h"
 #include "rclcpp/rclcpp.hpp"
 // TODO: include custom message
@@ -22,8 +23,9 @@ class VisionNode : public rclcpp::Node {
         QHash<int, SSL_DetectionFrame> _detectionPackets;
         SSL_GeometryData _geometryPacket;
         Position _ball;
-        QHash<qint8, Robot> _yellowTeam;
-        QHash<qint8, Robot> _blueTeam;
+        QHash<int, Robot> _yellowTeam;
+        QHash<int, Robot> _blueTeam;
+        timespec _start, _stop;
 
         // Internal functions
         void client_callback();
@@ -33,7 +35,7 @@ class VisionNode : public rclcpp::Node {
         QHash<int,std::pair<int,SSL_DetectionRobot> > parseCamerasRobots(const QList<SSL_DetectionFrame> &detectionFrames) const;
         void processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls);
         void processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot> > &robots);
-        QHash<qint8, Robot> processTeam(QList<std::pair<int, SSL_DetectionRobot>> team);
+        QHash<int, Robot> processTeam(QList<std::pair<int, SSL_DetectionRobot>> team);
 
     public:
         VisionNode(RoboCupSSLClient *client);
