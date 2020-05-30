@@ -26,6 +26,7 @@ class VisionNode : public rclcpp::Node {
         QHash<qint8, Robot> _yellowTeam;
         QHash<qint8, Robot> _blueTeam;
         timespec _start, _stop;
+        timespec _tstart, _tstop;
 
         // Internal functions
         void client_callback();
@@ -35,7 +36,8 @@ class VisionNode : public rclcpp::Node {
         QHash<int,std::pair<int,SSL_DetectionRobot> > parseCamerasRobots(const QList<SSL_DetectionFrame> &detectionFrames) const;
         void processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls);
         void processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot> > &robots);
-        QHash<qint8, Robot> processTeam(QList<std::pair<int, SSL_DetectionRobot>> team);
+        QHash<qint8, Robot> processTeam(QList<std::pair<int, SSL_DetectionRobot>> team, int color);
+        bool checkVisibility(Position reference, QList<Robot> robots, Position target, float minDistance);
 
     public:
         VisionNode(RoboCupSSLClient *client);

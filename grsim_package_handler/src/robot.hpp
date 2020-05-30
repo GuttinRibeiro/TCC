@@ -12,6 +12,7 @@ class Robot {
         int _team;
         bool _hasOri;
         Sensor _sensorSet;
+        float _radius;
 
     public:
         Robot() {
@@ -20,6 +21,7 @@ class Robot {
             _hasOri = false;
             _team = -1;
             _id = -1;
+            _radius = 0.09;
         }
         Robot(Position pos, int team, qint8 id) {
             _pos = pos;
@@ -27,6 +29,7 @@ class Robot {
             _id = id;
             _ori = 0.0;
             _hasOri = false;
+            _radius = 0.09;
         }
         Robot(Position pos, float orientation, int team, quint8 id) {
             _pos = pos;
@@ -34,6 +37,7 @@ class Robot {
             _hasOri = true;
             _team = team;
             _id = id;
+            _radius = 0.09;
         }
 
         bool hasOrientarion() {return _hasOri;}
@@ -42,6 +46,7 @@ class Robot {
         quint8 id() {return _id;}
         int team() {return _team;}
         Sensor getSensor() {return _sensorSet;}
+        float radius() {return _radius;}
 
         void setPosition(Position pos) {_pos = pos;}
         void setOrientation(float ori) {_ori = ori; _hasOri = true;}

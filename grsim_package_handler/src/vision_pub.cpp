@@ -27,15 +27,13 @@ VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     }
 
     _client = client;
-    // Nota: achei muito estranho isso de bindar com um timer. Tentei criar uma thread, mas
-    // programa crasha. Checar como o client da visão funciona, provavelmente terei que jogar
-    // um tempo minúsculo aqui.
     clock_gettime(CLOCK_REALTIME, &_start);
     _timer = this->create_wall_timer(5ms, std::bind(&VisionNode::client_callback, this));
     _ball = Position();
 }
 
 void VisionNode::client_callback() {
+    //clock_gettime(CLOCK_REALTIME, &_tstart);
     SSL_WrapperPacket packet;
 
     // Wait for package
@@ -61,22 +59,18 @@ void VisionNode::client_callback() {
         update();
     }
 
-    // TODO: split info into topics
     split_packages();
-
-    // Create and publish a message to each topic
-    //auto message = std_msgs::msg::String();
-    //message.data = "Publishing!";
-    //RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-    //_publisher->publish(message);
+    //clock_gettime(CLOCK_REALTIME, &_tstop);
+    //std::cout << "Tempo para dividir pacotes: " << ((_tstop.tv_sec*1E9+_tstop.tv_nsec)-(_tstart.tv_sec*1E9+_tstart.tv_nsec))/1E6 << " ms\n";
 }
-
 
 // Welcome to the hell!
 void VisionNode::split_packages() {
     // Publish messages for blue robots: [ok]
     QList<qint8> ids = _blueTeam.keys();
+    QList<Robot> visible_robots;
     for(int i = 0; i < ids.size(); i++) {
+        visible_robots.clear();
         auto message = grsim_package_handler::msg::Visionpkg();
         Robot selected = _blueTeam.value(ids[i]);
 
@@ -99,13 +93,7 @@ void VisionNode::split_packages() {
                     float orientation = Utils::wrapToTwoPi(selected.orientation());
                     float diff = Utils::angleDiff(angle, orientation);
                     if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
-                        //[TODO] Check for obstruction:
-                        auto rob_msg = grsim_package_handler::msg::Robot();
-                        rob_msg.x = rob.position().x();
-                        rob_msg.y = rob.position().y();
-                        rob_msg.id = rob.id();
-                        rob_msg.team = "blue";
-                        message.robots.push_back(rob_msg);
+                        visible_robots.append(rob);
                     }
                 }
             }
@@ -119,13 +107,7 @@ void VisionNode::split_packages() {
                 float orientation = Utils::wrapToTwoPi(selected.orientation());
                 float diff = Utils::angleDiff(angle, orientation);
                 if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
-                    //[TODO] Check for obstruction:
-                    auto rob_msg = grsim_package_handler::msg::Robot();
-                    rob_msg.x = rob.position().x();
-                    rob_msg.y = rob.position().y();
-                    rob_msg.id = rob.id();
-                    rob_msg.team = "yellow";
-                    message.robots.push_back(rob_msg);
+                    visible_robots.append(rob);
                 }
             }
         }
@@ -137,15 +119,31 @@ void VisionNode::split_packages() {
             float orientation = Utils::wrapToTwoPi(selected.orientation());
             float diff = Utils::angleDiff(angle, orientation);
             if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
-                //[TODO] Check for obstruction:
-                auto ball_msg = grsim_package_handler::msg::Ball();
-                ball_msg.x = _ball.x();
-                ball_msg.y = _ball.y();
-                message.balls.push_back(ball_msg);
+                //Check for obstruction:
+                if(checkVisibility(selected.position(), visible_robots, _ball, selected.radius())) {
+                    auto ball_msg = grsim_package_handler::msg::Ball();
+                    ball_msg.x = _ball.x();
+                    ball_msg.y = _ball.y();
+                    message.balls.push_back(ball_msg);
+                }
             }
         }
 
-        // Publish the desired (I guess) message:
+        // Check visible robots:
+        for(int j = 0; j < visible_robots.size(); j++) {
+            Robot target = visible_robots.takeAt(j);
+            if(checkVisibility(selected.position(), visible_robots, target.position(), 2*selected.radius())) {
+                auto rob_msg = grsim_package_handler::msg::Robot();
+                rob_msg.x = target.position().x();
+                rob_msg.y = target.position().y();
+                rob_msg.id = target.id();
+                rob_msg.team = target.team() == Colors::YELLOW ? "yellow" : "blue";
+                message.robots.push_back(rob_msg);
+            }
+            visible_robots.insert(j, target);
+        }
+
+        // Publish the desired message:
         clock_gettime(CLOCK_REALTIME, &_stop);
         message.timestamp = ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
         _publisherBlue.value(ids[i])->publish(message);
@@ -154,6 +152,7 @@ void VisionNode::split_packages() {
     //Publish messages for yellow robots: [ok]
     ids = _yellowTeam.keys();
     for(int i = 0; i < ids.size(); i++) {
+        visible_robots.clear();
         auto message = grsim_package_handler::msg::Visionpkg();
         Robot selected = _yellowTeam.value(ids[i]);
 
@@ -174,13 +173,7 @@ void VisionNode::split_packages() {
                 float orientation = Utils::wrapToTwoPi(selected.orientation());
                 float diff = Utils::angleDiff(angle, orientation);
                 if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
-                    //[TODO] Check for obstruction:
-                    auto rob_msg = grsim_package_handler::msg::Robot();
-                    rob_msg.x = rob.position().x();
-                    rob_msg.y = rob.position().y();
-                    rob_msg.id = rob.id();
-                    rob_msg.team = "blue";
-                    message.robots.push_back(rob_msg);
+                    visible_robots.append(rob);
                 }
             }
         }
@@ -196,15 +189,9 @@ void VisionNode::split_packages() {
                     float orientation = Utils::wrapToTwoPi(selected.orientation());
                     float diff = Utils::angleDiff(angle, orientation);
                     if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
-                        //[TODO] Check for obstruction:
-                        auto rob_msg = grsim_package_handler::msg::Robot();
-                        rob_msg.x = rob.position().x();
-                        rob_msg.y = rob.position().y();
-                        rob_msg.id = rob.id();
-                        rob_msg.team = "yellow";
-                        message.robots.push_back(rob_msg);
+                        visible_robots.append(rob);
+                    }
                 }
-            }
             }
         }
 
@@ -215,15 +202,33 @@ void VisionNode::split_packages() {
             float orientation = Utils::wrapToTwoPi(selected.orientation());
             float diff = Utils::angleDiff(angle, orientation);
             if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
-                //[TODO] Check for obstruction:
-                auto ball_msg = grsim_package_handler::msg::Ball();
-                ball_msg.x = _ball.x();
-                ball_msg.y = _ball.y();
-                message.balls.push_back(ball_msg);
+                //Check for obstruction:
+                if(checkVisibility(selected.position(), visible_robots, _ball, selected.radius())) {
+                    auto ball_msg = grsim_package_handler::msg::Ball();
+                    ball_msg.x = _ball.x();
+                    ball_msg.y = _ball.y();
+                    message.balls.push_back(ball_msg);
+                }
             }
         }
 
-        // Publish the desired (I guess) message:
+        // Check visible robots:
+        for(int j = 0; j < visible_robots.size(); j++) {
+            Robot target = visible_robots.takeAt(j);
+            if(checkVisibility(selected.position(), visible_robots, target.position(), 2*selected.radius())) {
+                auto rob_msg = grsim_package_handler::msg::Robot();
+                rob_msg.x = target.position().x();
+                rob_msg.y = target.position().y();
+                rob_msg.id = target.id();
+                rob_msg.team = target.team() == Colors::YELLOW ? "yellow" : "blue";
+                message.robots.push_back(rob_msg);
+            }
+            visible_robots.insert(j, target);
+        }
+
+        // Publish the desired message:
+        clock_gettime(CLOCK_REALTIME, &_stop);
+        message.timestamp = ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
         _publisherYellow.value(ids[i])->publish(message);
     }    
 
@@ -272,11 +277,11 @@ void VisionNode::processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot
     QList<std::pair<int, SSL_DetectionRobot>> yellowTeam = robots.values(Colors::YELLOW);
     QList<std::pair<int, SSL_DetectionRobot>> blueTeam = robots.values(Colors::BLUE);
 
-    _yellowTeam = processTeam(yellowTeam);
-    _blueTeam = processTeam(blueTeam);
+    _yellowTeam = processTeam(yellowTeam, Colors::YELLOW);
+    _blueTeam = processTeam(blueTeam, Colors::BLUE);
 }
 
-QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobot>> team) {
+QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobot>> team, int color) {
     float realX = 0;
     float realY = 0;
     float realOri = 0;
@@ -314,7 +319,7 @@ QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRo
         }
 
         Position pos(realX/numFrames, realY/numFrames, 0.0, false);
-        Robot aux(pos, -1, i);
+        Robot aux(pos, color, i);
         if(numOri > 0) {
             aux.setOrientation(realOri/numFrames);
         }
@@ -360,4 +365,19 @@ QHash<int,std::pair<int,SSL_DetectionRobot> > VisionNode::parseCamerasRobots(con
     }
 
     return retn;
+}
+
+bool VisionNode::checkVisibility(Position reference, QList<Robot> robots, Position target, float minDistance) {
+    for(int i = 0; i < robots.size(); i++) {
+        // Check if the robot can be between the reference and the target:
+        if(Utils::distance(target, reference) >= Utils::distance(robots[i].position(), reference)) {
+            // Calculate a line from the reference to the target and check if the distance
+            // from the robot to the referred line is less than minDist:
+            if(Utils::distanceToLine(reference, target, robots[i].position()) < minDistance) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
