@@ -4,8 +4,8 @@
 #include <memory>
 #include <QList>
 #include <iostream>
+#include <cmath>
 #define MAX_ROBOTS 6
-#define PI 3.14159265358
 
 using namespace std::chrono_literals;
 
@@ -17,12 +17,12 @@ enum Colors {
 
 VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     // Yellow robots
-    for(int i = 0; i < MAX_ROBOTS; i++) {
+    for(qint8 i = 0; i < MAX_ROBOTS; i++) {
         _publisherYellow.insert(i, this->create_publisher<grsim_package_handler::msg::Visionpkg>("yellow_"+std::to_string(i), 10));
     }
 
     // Blue robots
-    for(int i = 0; i < MAX_ROBOTS; i++) {
+    for(qint8 i = 0; i < MAX_ROBOTS; i++) {
         _publisherBlue.insert(i, this->create_publisher<grsim_package_handler::msg::Visionpkg>("blue_"+std::to_string(i), 10));
     }
 
@@ -74,8 +74,8 @@ void VisionNode::client_callback() {
 
 // Welcome to the hell!
 void VisionNode::split_packages() {
-    // Publish messages for blue robots:
-    QList<int> ids = _blueTeam.keys();
+    // Publish messages for blue robots: [ok]
+    QList<qint8> ids = _blueTeam.keys();
     for(int i = 0; i < ids.size(); i++) {
         auto message = grsim_package_handler::msg::Visionpkg();
         Robot selected = _blueTeam.value(ids[i]);
@@ -95,8 +95,10 @@ void VisionNode::split_packages() {
 
                 // If rob is within sensor range:
                 if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
-                    float angle = Utils::getAngle(selected.position(), rob.position());
-                    if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                    float angle = Utils::wrapToTwoPi(Utils::getAngle(rob.position(), selected.position()));
+                    float orientation = Utils::wrapToTwoPi(selected.orientation());
+                    float diff = Utils::angleDiff(angle, orientation);
+                    if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                         //[TODO] Check for obstruction:
                         auto rob_msg = grsim_package_handler::msg::Robot();
                         rob_msg.x = rob.position().x();
@@ -112,25 +114,11 @@ void VisionNode::split_packages() {
         // Yellow team:
         for(int j = 0; j < ids.size(); j++) {
             Robot rob = _yellowTeam.value(ids[j]);
-
-            // If rob is within sensor range:
-            if(ids[j] == 3 && ids[i] == 3) {
-                std::cout << "MinRange: " << selected.getSensor().minRange() << "\n";
-                std::cout << "MaxRange: " << selected.getSensor().maxRange() << "\n";
-                std::cout << "Rob: " << rob.position().x() << ", " << rob.position().y() << "\n";
-                std::cout << "Selected: " << selected.position().x() << ", " << selected.position().y() << "\n";
-                std::cout << "Distance: " << Utils::distance(selected.position(), rob.position()) << "\n";
-                std::cout << "Distance condition: " << Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position())) << "\n";
-                float angle = Utils::getAngle(rob.position(), selected.position());
-                std::cout << "Angular condiiton: " << Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle) << "\n";
-                std::cout << "Min angle lim: " << selected.orientation()+selected.getSensor().minAngle() << "\n";
-                std::cout << "Max angle lim: " << selected.orientation()+selected.getSensor().maxAngle() << "\n";
-                std::cout << "Angle: " << angle << "\n";
-            }
-            
             if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
-                float angle = Utils::getAngle(selected.position(), rob.position());
-                if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                float angle = Utils::wrapToTwoPi(Utils::getAngle(rob.position(), selected.position()));
+                float orientation = Utils::wrapToTwoPi(selected.orientation());
+                float diff = Utils::angleDiff(angle, orientation);
+                if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                     //[TODO] Check for obstruction:
                     auto rob_msg = grsim_package_handler::msg::Robot();
                     rob_msg.x = rob.position().x();
@@ -145,8 +133,10 @@ void VisionNode::split_packages() {
         // Ball:
         // If the ball is within sensor range:
         if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), _ball))) {
-            float angle = Utils::getAngle(selected.position(), _ball);
-            if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+            float angle = Utils::wrapToTwoPi(Utils::getAngle(_ball, selected.position()));
+            float orientation = Utils::wrapToTwoPi(selected.orientation());
+            float diff = Utils::angleDiff(angle, orientation);
+            if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                 //[TODO] Check for obstruction:
                 auto ball_msg = grsim_package_handler::msg::Ball();
                 ball_msg.x = _ball.x();
@@ -161,7 +151,7 @@ void VisionNode::split_packages() {
         _publisherBlue.value(ids[i])->publish(message);
     }
 
-    //Publish messages for yellow robots:
+    //Publish messages for yellow robots: [ok]
     ids = _yellowTeam.keys();
     for(int i = 0; i < ids.size(); i++) {
         auto message = grsim_package_handler::msg::Visionpkg();
@@ -177,12 +167,13 @@ void VisionNode::split_packages() {
 
         // Blue team:
         for(int j = 0; j < ids.size(); j++) {
-            Robot rob = _blueTeam.value(j);
-
+            Robot rob = _blueTeam.value(ids[j]);
             // If rob is within sensor range:
             if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
-                float angle = Utils::getAngle(selected.position(), rob.position());
-                if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                float angle = Utils::wrapToTwoPi(Utils::getAngle(rob.position(), selected.position()));
+                float orientation = Utils::wrapToTwoPi(selected.orientation());
+                float diff = Utils::angleDiff(angle, orientation);
+                if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                     //[TODO] Check for obstruction:
                     auto rob_msg = grsim_package_handler::msg::Robot();
                     rob_msg.x = rob.position().x();
@@ -197,12 +188,14 @@ void VisionNode::split_packages() {
         // Yellow team:
         for(int j = 0; j < ids.size(); j++) {
             if(j != i) {
-                Robot rob = _yellowTeam.value(j);
+                Robot rob = _yellowTeam.value(ids[j]);
 
                 // If rob is within sensor range:
                 if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), rob.position()))) {
-                    float angle = Utils::getAngle(selected.position(), rob.position());
-                    if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+                    float angle = Utils::wrapToTwoPi(Utils::getAngle(rob.position(), selected.position()));
+                    float orientation = Utils::wrapToTwoPi(selected.orientation());
+                    float diff = Utils::angleDiff(angle, orientation);
+                    if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                         //[TODO] Check for obstruction:
                         auto rob_msg = grsim_package_handler::msg::Robot();
                         rob_msg.x = rob.position().x();
@@ -218,8 +211,10 @@ void VisionNode::split_packages() {
         // Ball:
         // If the ball is within sensor range:
         if(Utils::isWithinInterval(selected.getSensor().minRange(), selected.getSensor().maxRange(), Utils::distance(selected.position(), _ball))) {
-            float angle = Utils::getAngle(selected.position(), _ball);
-            if(Utils::isWithinInterval(selected.orientation()+selected.getSensor().minAngle(), selected.orientation()+selected.getSensor().maxAngle(), angle)) {
+            float angle = Utils::wrapToTwoPi(Utils::getAngle(_ball, selected.position()));
+            float orientation = Utils::wrapToTwoPi(selected.orientation());
+            float diff = Utils::angleDiff(angle, orientation);
+            if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                 //[TODO] Check for obstruction:
                 auto ball_msg = grsim_package_handler::msg::Ball();
                 ball_msg.x = _ball.x();
@@ -229,7 +224,7 @@ void VisionNode::split_packages() {
         }
 
         // Publish the desired (I guess) message:
-        _publisherYellow.value(i)->publish(message);
+        _publisherYellow.value(ids[i])->publish(message);
     }    
 
 }
@@ -241,11 +236,6 @@ void VisionNode::update() {
 
     processBalls(balls);
     processRobots(robots);
-
-    //[Debug]
-    //Robot aux = _blueTeam.value(5);
-    //std::cout << "Blue robot 5: " << aux.position().x() << ", " << aux.position().y() << "\n";
-    //std::cout << "Blue robot 5: " << aux.orientation() << "\n";
 }
 
 void VisionNode::processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls) {
@@ -286,16 +276,16 @@ void VisionNode::processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot
     _blueTeam = processTeam(blueTeam);
 }
 
-QHash<int, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobot>> team) {
+QHash<qint8, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobot>> team) {
     float realX = 0;
     float realY = 0;
     float realOri = 0;
     int numFrames = 0;
     int numOri = 0;
-    QHash<int, Robot> ret;
+    QHash<qint8, Robot> ret;
 
     // For each id:
-    for(unsigned i = 0; i < MAX_ROBOTS; i++) {
+    for(qint8 i = 0; i < MAX_ROBOTS; i++) {
         QList<std::pair<int,SSL_DetectionRobot> >::iterator it;
 
         // Sum the coordinates of each frame for the same robot and apply a mean
@@ -328,7 +318,7 @@ QHash<int, Robot> VisionNode::processTeam(QList<std::pair<int, SSL_DetectionRobo
         if(numOri > 0) {
             aux.setOrientation(realOri/numFrames);
         }
-        Sensor sen("camera", 20.0, -PI/4, PI/4);
+        Sensor sen("camera", 20.0, -M_PI/4, M_PI/4);
         aux.addSensor(sen);
         ret.insert(i, aux);
     }

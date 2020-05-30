@@ -18,13 +18,13 @@ class VisionNode : public rclcpp::Node {
     private:
         RoboCupSSLClient *_client;
         rclcpp::TimerBase::SharedPtr _timer;
-        QHash<int, rclcpp::Publisher<grsim_package_handler::msg::Visionpkg>::SharedPtr> _publisherYellow;
-        QHash<int, rclcpp::Publisher<grsim_package_handler::msg::Visionpkg>::SharedPtr> _publisherBlue;
+        QHash<qint8, rclcpp::Publisher<grsim_package_handler::msg::Visionpkg>::SharedPtr> _publisherYellow;
+        QHash<qint8, rclcpp::Publisher<grsim_package_handler::msg::Visionpkg>::SharedPtr> _publisherBlue;
         QHash<int, SSL_DetectionFrame> _detectionPackets;
         SSL_GeometryData _geometryPacket;
         Position _ball;
-        QHash<int, Robot> _yellowTeam;
-        QHash<int, Robot> _blueTeam;
+        QHash<qint8, Robot> _yellowTeam;
+        QHash<qint8, Robot> _blueTeam;
         timespec _start, _stop;
 
         // Internal functions
@@ -35,7 +35,7 @@ class VisionNode : public rclcpp::Node {
         QHash<int,std::pair<int,SSL_DetectionRobot> > parseCamerasRobots(const QList<SSL_DetectionFrame> &detectionFrames) const;
         void processBalls(const QList<std::pair<int,SSL_DetectionBall> > &balls);
         void processRobots(const QHash<int, std::pair<int,SSL_DetectionRobot> > &robots);
-        QHash<int, Robot> processTeam(QList<std::pair<int, SSL_DetectionRobot>> team);
+        QHash<qint8, Robot> processTeam(QList<std::pair<int, SSL_DetectionRobot>> team);
 
     public:
         VisionNode(RoboCupSSLClient *client);

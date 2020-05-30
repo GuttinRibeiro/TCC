@@ -18,7 +18,7 @@ float Utils::getAngle(Position pos) {
 }
 
 float Utils::getAngle(Position pos1, Position pos2) {
-    return sqrt(pow(pos1.x()-pos2.x(),2) + pow(pos1.y()-pos2.y(),2));
+    return atan2(pos1.y()-pos2.y(), pos1.x()-pos2.x());
 }
 
 float Utils::scalarProduct(Position A, Position B) {
@@ -38,4 +38,20 @@ float Utils::distanceToLine(Position p1, Position p2, Position point) {
     Position projectedPoint = Utils::projectPointAtLine(p1, p2, point);
     float distance = Utils::distance(point, projectedPoint);
     return (distance<=0.001f)? 0 : distance;
+}
+
+float Utils::wrapToTwoPi(float angle) {
+    angle += 10*M_PI; //Sum a bunch of PIs to make sure this angle is positive
+    return fmod(angle, 2*M_PI);
+}
+
+float Utils::angleDiff(float a, float b) {
+    float diff = a-b;
+    if(diff > M_PI) {
+        diff = 2*M_PI-diff;
+    } else if(diff < -M_PI) {
+        diff = 2*M_PI+diff;
+    }
+
+    return diff;
 }

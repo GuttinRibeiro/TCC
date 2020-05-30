@@ -8,7 +8,7 @@ class Robot {
     private:
         Position _pos;
         float _ori;
-        int _id;
+        qint8 _id;
         int _team;
         bool _hasOri;
         Sensor _sensorSet;
@@ -28,7 +28,7 @@ class Robot {
             _ori = 0.0;
             _hasOri = false;
         }
-        Robot(Position pos, float orientation, int team, int8_t id) {
+        Robot(Position pos, float orientation, int team, quint8 id) {
             _pos = pos;
             _ori = orientation;
             _hasOri = true;
@@ -39,14 +39,14 @@ class Robot {
         bool hasOrientarion() {return _hasOri;}
         Position position() {return _pos;}
         float orientation() {return _ori;}
-        int id() {return _id;}
+        quint8 id() {return _id;}
         int team() {return _team;}
         Sensor getSensor() {return _sensorSet;}
 
         void setPosition(Position pos) {_pos = pos;}
         void setOrientation(float ori) {_ori = ori; _hasOri = true;}
         void clearOrientation() {_hasOri = false;}
-        void setId(int id) {_id = id;}
+        void setId(quint8 id) {_id = id;}
         void setTeam(int team) {_team = team;}
         void addSensor(Sensor sensor) {_sensorSet = sensor;}
 };

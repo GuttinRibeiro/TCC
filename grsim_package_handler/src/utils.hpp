@@ -12,6 +12,8 @@ class Utils {
         static float scalarProduct(Position A, Position B);
         static Position projectPointAtLine(Position p1, Position p2, Position point);
         static float distanceToLine(Position p1, Position p2, Position point);
+        static float wrapToTwoPi(float angle);
+        static float angleDiff(float a, float b);
 };
 
 #endif

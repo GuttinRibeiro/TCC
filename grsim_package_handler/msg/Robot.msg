@@ -1,4 +1,4 @@
 float32 x
 float32 y
-int32 id
+int8 id
 string team
