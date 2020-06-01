@@ -18,22 +18,23 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(ctr_msgs REQUIRED)
 
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS src/referee.proto)
 
-add_executable(refbox_node src/refbox_node.cpp ${PROTO_SRCS} ${PROTO_HDRS})
-ament_target_dependencies(refbox_node rclcpp)
+add_executable(refbox_node src/refbox_node.cpp src/refbox_interface.cpp ${PROTO_SRCS} ${PROTO_HDRS})
+ament_target_dependencies(refbox_node rclcpp ctr_msgs)
 
 target_include_directories(refbox_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-target_link_libraries(refbox_node Qt5::Widgets ${Protobuf_LIBRARIES})
+target_link_libraries(refbox_node Qt5::Widgets Qt5::Network ${Protobuf_LIBRARIES})
 
 install(TARGETS refbox_node
   EXPORT export_${PROJECT_NAME}
