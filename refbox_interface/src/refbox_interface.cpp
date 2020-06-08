@@ -34,10 +34,11 @@ Refbox_Interface::Refbox_Interface(QHash<int, QList<qint8>> robots, QString ipAd
 
         // For each player:
         QList<qint8> ids = _robots.value(keys[i]);
+        QHash<qint8, rclcpp::Client<ctr_msgs::srv::State>::SharedPtr> element;
         for(int j = 0; j < ids.size(); j++) {
-            QHash<qint8, rclcpp::Client<ctr_msgs::srv::State>::SharedPtr> element;
             element.insert(ids[j], this->create_client<ctr_msgs::srv::State>("state_service/"+team+std::to_string(ids[j])));
         }
+        _clientTable.insert(keys[i], element);
     }
 
     _timer = this->create_wall_timer(20ms, std::bind(&Refbox_Interface::callback, this));
