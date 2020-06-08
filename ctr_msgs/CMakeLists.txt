@@ -16,6 +16,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(ctr_msgs
    srv/State.srv
+   msg/Command.msg
 )
 
 ament_export_dependencies(rosidl_default_runtime)
