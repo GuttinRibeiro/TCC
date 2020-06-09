@@ -28,7 +28,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS src/grSim_Commands.proto
 src/grSim_Packet.proto src/grSim_Replacement.proto)
 
-add_executable(sim_actuator src/sim_actuator.cpp ${PROTO_SRCS} ${PROTO_HDRS})
+add_executable(sim_actuator src/sim_actuator.cpp src/grsim_actuator_sub.cpp src/actuator_sub.cpp ${PROTO_SRCS} ${PROTO_HDRS})
 ament_target_dependencies(sim_actuator rclcpp ctr_msgs)
 
 target_include_directories(sim_actuator PUBLIC

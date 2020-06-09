@@ -5,4 +5,5 @@ string team
 int8 id
 bool spinner
 bool chipkick
-float32 kickspeed
+float32 kickspeedy
+float32 kickspeedz
