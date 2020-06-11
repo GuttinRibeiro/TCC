@@ -1,0 +1,4 @@
+enum Colors {
+    BLUE,
+    YELLOW
+};
