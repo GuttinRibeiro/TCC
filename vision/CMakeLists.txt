@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(grsim_package_handler)
+project(vision)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

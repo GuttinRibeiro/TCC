@@ -5,10 +5,9 @@
 #include <ctime>
 #include "robocup_ssl_client.h"
 #include "rclcpp/rclcpp.hpp"
-// TODO: include custom message
-#include "grsim_package_handler/msg/ball.hpp"
-#include "grsim_package_handler/msg/robot.hpp"
-#include "grsim_package_handler/msg/visionpkg.hpp"
+#include "vision/msg/ball.hpp"
+#include "vision/msg/robot.hpp"
+#include "vision/msg/visionpkg.hpp"
 #include "position.hpp"
 #include "robot.hpp"
 
@@ -18,8 +17,8 @@ class VisionNode : public rclcpp::Node {
     private:
         RoboCupSSLClient *_client;
         rclcpp::TimerBase::SharedPtr _timer;
-        QHash<qint8, rclcpp::Publisher<grsim_package_handler::msg::Visionpkg>::SharedPtr> _publisherYellow;
-        QHash<qint8, rclcpp::Publisher<grsim_package_handler::msg::Visionpkg>::SharedPtr> _publisherBlue;
+        QHash<qint8, rclcpp::Publisher<vision::msg::Visionpkg>::SharedPtr> _publisherYellow;
+        QHash<qint8, rclcpp::Publisher<vision::msg::Visionpkg>::SharedPtr> _publisherBlue;
         QHash<int, SSL_DetectionFrame> _detectionPackets;
         SSL_GeometryData _geometryPacket;
         Position _ball;

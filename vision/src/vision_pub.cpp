@@ -18,12 +18,12 @@ enum Colors {
 VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     // Yellow robots
     for(qint8 i = 0; i < MAX_ROBOTS; i++) {
-        _publisherYellow.insert(i, this->create_publisher<grsim_package_handler::msg::Visionpkg>("yellow_"+std::to_string(i), 10));
+        _publisherYellow.insert(i, this->create_publisher<vision::msg::Visionpkg>("yellow_"+std::to_string(i), 10));
     }
 
     // Blue robots
     for(qint8 i = 0; i < MAX_ROBOTS; i++) {
-        _publisherBlue.insert(i, this->create_publisher<grsim_package_handler::msg::Visionpkg>("blue_"+std::to_string(i), 10));
+        _publisherBlue.insert(i, this->create_publisher<vision::msg::Visionpkg>("blue_"+std::to_string(i), 10));
     }
 
     _client = client;
@@ -71,11 +71,11 @@ void VisionNode::split_packages() {
     QList<Robot> visible_robots;
     for(int i = 0; i < ids.size(); i++) {
         visible_robots.clear();
-        auto message = grsim_package_handler::msg::Visionpkg();
+        auto message = vision::msg::Visionpkg();
         Robot selected = _blueTeam.value(ids[i]);
 
         // Its own position:
-        auto rob_msg = grsim_package_handler::msg::Robot();
+        auto rob_msg = vision::msg::Robot();
         rob_msg.x = selected.position().x();
         rob_msg.y = selected.position().y();
         rob_msg.id = selected.id();
@@ -121,7 +121,7 @@ void VisionNode::split_packages() {
             if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                 //Check for obstruction:
                 if(checkVisibility(selected.position(), visible_robots, _ball, selected.radius())) {
-                    auto ball_msg = grsim_package_handler::msg::Ball();
+                    auto ball_msg = vision::msg::Ball();
                     ball_msg.x = _ball.x();
                     ball_msg.y = _ball.y();
                     message.balls.push_back(ball_msg);
@@ -133,7 +133,7 @@ void VisionNode::split_packages() {
         for(int j = 0; j < visible_robots.size(); j++) {
             Robot target = visible_robots.takeAt(j);
             if(checkVisibility(selected.position(), visible_robots, target.position(), 2*selected.radius())) {
-                auto rob_msg = grsim_package_handler::msg::Robot();
+                auto rob_msg = vision::msg::Robot();
                 rob_msg.x = target.position().x();
                 rob_msg.y = target.position().y();
                 rob_msg.id = target.id();
@@ -153,11 +153,11 @@ void VisionNode::split_packages() {
     ids = _yellowTeam.keys();
     for(int i = 0; i < ids.size(); i++) {
         visible_robots.clear();
-        auto message = grsim_package_handler::msg::Visionpkg();
+        auto message = vision::msg::Visionpkg();
         Robot selected = _yellowTeam.value(ids[i]);
 
         // Its own position:
-        auto rob_msg = grsim_package_handler::msg::Robot();
+        auto rob_msg = vision::msg::Robot();
         rob_msg.x = selected.position().x();
         rob_msg.y = selected.position().y();
         rob_msg.id = selected.id();
@@ -204,7 +204,7 @@ void VisionNode::split_packages() {
             if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                 //Check for obstruction:
                 if(checkVisibility(selected.position(), visible_robots, _ball, selected.radius())) {
-                    auto ball_msg = grsim_package_handler::msg::Ball();
+                    auto ball_msg = vision::msg::Ball();
                     ball_msg.x = _ball.x();
                     ball_msg.y = _ball.y();
                     message.balls.push_back(ball_msg);
@@ -216,7 +216,7 @@ void VisionNode::split_packages() {
         for(int j = 0; j < visible_robots.size(); j++) {
             Robot target = visible_robots.takeAt(j);
             if(checkVisibility(selected.position(), visible_robots, target.position(), 2*selected.radius())) {
-                auto rob_msg = grsim_package_handler::msg::Robot();
+                auto rob_msg = vision::msg::Robot();
                 rob_msg.x = target.position().x();
                 rob_msg.y = target.position().y();
                 rob_msg.id = target.id();

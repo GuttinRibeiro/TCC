@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>grsim_package_handler</name>
+  <name>vision</name>
   <version>0.0.0</version>
-  <description>GRSIM PACKAGE HANDLER: A node responsible for receiving data from grsim and split it into topics representing what each robot can percept from the environment </description>
+  <description> This package contains nodes related to computer vision </description>
   <maintainer email="augusto.ribeiro.castro@usp.br">Augusto Ribeiro</maintainer>
   <license>MIT License</license>
 
