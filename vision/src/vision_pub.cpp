@@ -18,12 +18,12 @@ enum Colors {
 VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
     // Yellow robots
     for(qint8 i = 0; i < MAX_ROBOTS; i++) {
-        _publisherYellow.insert(i, this->create_publisher<vision::msg::Visionpkg>("yellow_"+std::to_string(i), 10));
+        _publisherYellow.insert(i, this->create_publisher<vision::msg::Visionpkg>("vision/yellow_"+std::to_string(i), 10));
     }
 
     // Blue robots
     for(qint8 i = 0; i < MAX_ROBOTS; i++) {
-        _publisherBlue.insert(i, this->create_publisher<vision::msg::Visionpkg>("blue_"+std::to_string(i), 10));
+        _publisherBlue.insert(i, this->create_publisher<vision::msg::Visionpkg>("vision/blue_"+std::to_string(i), 10));
     }
 
     _client = client;

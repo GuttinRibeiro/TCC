@@ -22,6 +22,7 @@ find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ctr_msgs REQUIRED)
+find_package(vision REQUIRED)
 
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
