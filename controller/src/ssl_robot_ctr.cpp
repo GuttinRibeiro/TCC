@@ -2,6 +2,7 @@
 #include <QtCore>
 #include <iostream>
 #include "controller/controller.hpp"
+#include "utils/fields/field_ssl2019.hpp"
 
 int main(int argc, char **argv) {
   // Command line argument:
@@ -13,7 +14,7 @@ int main(int argc, char **argv) {
   std::string team = argv[1];
   int id = atoi(argv[2]);
 
-
+  Field_SSL2019 field;
   // ROS 2
   /*rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
