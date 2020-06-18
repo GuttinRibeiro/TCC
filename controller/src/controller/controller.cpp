@@ -9,6 +9,7 @@ Controller::Controller(std::string team, int id, Field *field, int frequency) : 
   _team = team;
   _id = (qint8) id;
   _wm = new WorldMap();
+  _ib = new InfoBus(_wm, _id, _team);
 
   std::string robotToken = team+"_"+std::to_string(id);
 

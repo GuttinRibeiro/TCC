@@ -12,6 +12,7 @@
 #include "vision/msg/visionpkg.hpp"
 #include "worldmap.hpp"
 #include "../utils/field.hpp"
+#include "infobus.hpp"
 
 class Controller : public rclcpp::Node {
   private:
@@ -19,6 +20,7 @@ class Controller : public rclcpp::Node {
     std::string _team;
     int _state;
     WorldMap *_wm;
+    InfoBus *_ib;
 
     rclcpp::CallbackGroup::SharedPtr _callback_group_vision;
     rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
@@ -31,6 +33,8 @@ class Controller : public rclcpp::Node {
     rclcpp::Subscription<vision::msg::Visionpkg>::SharedPtr _subVision;
     rclcpp::Service<ctr_msgs::srv::State>::SharedPtr _serviceExternalAgent;
     rclcpp::TimerBase::SharedPtr _timer;
+
+    InfoBus* infoBus() {return _ib;}
 
     virtual void updateState(const std::shared_ptr<rmw_request_id_t> request_header,
                              const std::shared_ptr<ctr_msgs::srv::State::Request> request,

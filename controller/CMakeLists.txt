@@ -17,7 +17,8 @@ find_package(rclcpp REQUIRED)
 find_package(ctr_msgs REQUIRED)
 find_package(vision REQUIRED)
 
-add_executable(ssl_controller src/ssl_robot_ctr.cpp src/controller/controller.cpp src/utils/vector.cpp)
+add_executable(ssl_controller src/ssl_robot_ctr.cpp src/controller/controller.cpp
+    src/utils/vector.cpp src/controller/infobus.cpp)
 ament_target_dependencies(ssl_controller rclcpp ctr_msgs vision)
 
 target_include_directories(ssl_controller PUBLIC
