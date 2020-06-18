@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <QString>
 #include <string>
+#include <ctime>
 #include "rclcpp/rclcpp.hpp"
 #include "ctr_msgs/msg/command.hpp"
 #include "ctr_msgs/srv/state.hpp"
@@ -21,18 +22,22 @@ class Controller : public rclcpp::Node {
     int _state;
     WorldMap *_wm;
     InfoBus *_ib;
+    timespec _start, _stop;
+    double _time_now;
 
     rclcpp::CallbackGroup::SharedPtr _callback_group_vision;
     rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
     rclcpp::CallbackGroup::SharedPtr _callback_group_external_agent;
-    rclcpp::CallbackGroup::SharedPtr _callback_controller;
+    rclcpp::CallbackGroup::SharedPtr _callback_group_controller;
 
-    void updateWorldMap(const vision::msg::Visionpkg::SharedPtr msg);
+    void visionCallback(const vision::msg::Visionpkg::SharedPtr msg);
+    void updateWorldMap();
   protected:
     rclcpp::Publisher<ctr_msgs::msg::Command>::SharedPtr _pubActuator;
     rclcpp::Subscription<vision::msg::Visionpkg>::SharedPtr _subVision;
+    rclcpp::TimerBase::SharedPtr _timerVision;
     rclcpp::Service<ctr_msgs::srv::State>::SharedPtr _serviceExternalAgent;
-    rclcpp::TimerBase::SharedPtr _timer;
+    rclcpp::TimerBase::SharedPtr _timerCtr;
 
     InfoBus* infoBus() {return _ib;}
 

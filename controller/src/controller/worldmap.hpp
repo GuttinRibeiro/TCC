@@ -8,8 +8,31 @@ class WorldMap {
 private:
   QMutex _mutex;
   QHash<int, QHash<qint8, Element>> _elements;
+  double _threshold;
 public:
-  WorldMap() {_mutex.unlock();}
+  WorldMap(double persistense_time) {
+    _mutex.unlock();
+    _threshold = persistense_time;
+  }
+  void checkElements(const double &now) {
+    _mutex.lock();
+    QList<int> groups = _elements.keys();
+    // For each group:
+    for(int i = 0; i < groups.size(); i++) {
+      QList<qint8> ids = _elements.value(groups.at(i)).keys();
+      // For each element:
+      QHash<qint8, Element> group = _elements.value(groups.at(ids[i]));
+      for(int j = 0; j < ids.size(); j++) {
+        Element elem = group.value(ids[j]);
+        // If data are too old:
+        if(now - elem.position().timestamp() > _threshold) {
+          group.remove(elem.id());
+        }
+      }
+      _elements.insert(groups.at(i), group);
+    }
+    _mutex.unlock();
+  }
   void updateElement(const int &group, const qint8 &id, const float &radius, const float &orientation, Vector position) {
     _mutex.lock();
     Element elem;
