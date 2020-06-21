@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include "../utils/element.hpp"
+#include <iostream>
 
 class WorldMap {
 private:
@@ -21,7 +22,7 @@ public:
     for(int i = 0; i < groups.size(); i++) {
       QList<qint8> ids = _elements.value(groups.at(i)).keys();
       // For each element:
-      QHash<qint8, Element> group = _elements.value(groups.at(ids[i]));
+      QHash<qint8, Element> group = _elements.value(groups.at(i));
       for(int j = 0; j < ids.size(); j++) {
         Element elem = group.value(ids[j]);
         // If data are too old:

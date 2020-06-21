@@ -1,6 +1,8 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
+#include <cmath>
+
 class Vector {
   private:
     float _x;
@@ -19,6 +21,7 @@ class Vector {
     float x() {return _x;}
     float y() {return _y;}
     float z() {return _z;}
+    float norm() {return sqrt(pow(_x, 2)+pow(_y, 2)+pow(_z, 2));}
     double timestamp() {return _timestamp;}
     bool hasTimestamp() {return _hasTimestamp;}
     bool isUnknown() {return _isUnknown;}
@@ -44,6 +47,10 @@ class Vector {
 
     Vector operator-(Vector v) {
         return Vector(this->x()-v.x(), this->y()-v.y(), this->z()-v.z(), false);
+    }
+
+    Vector operator/(float k) {
+      return Vector(this->x()/k, this->y()/k, this->z()/k, false);
     }
 };
 

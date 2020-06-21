@@ -45,6 +45,11 @@ Controller::Controller(std::string team, int id, Field *field, int frequency) : 
   _timerVision = this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Controller::updateWorldMap, this), _callback_group_vision);
 }
 
+Controller::~Controller() {
+  delete _wm;
+  delete _ib;
+}
+
 void Controller::visionCallback(const vision::msg::Visionpkg::SharedPtr msg) {
   // Synchronize internal timer using messages timestamp
   _time_now = msg->timestamp;
@@ -79,4 +84,8 @@ void Controller::updateWorldMap() {
   _time_now += ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
   // Check all timestamps and remove old information
   _wm->checkElements(_time_now);
+}
+
+void Controller::sendCommand(const ctr_msgs::msg::Command *message) {
+  _pubActuator->publish(*message);
 }

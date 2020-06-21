@@ -17,9 +17,6 @@
 
 class Controller : public rclcpp::Node {
   private:
-    qint8 _id;
-    std::string _team;
-    int _state;
     WorldMap *_wm;
     InfoBus *_ib;
     timespec _start, _stop;
@@ -30,14 +27,17 @@ class Controller : public rclcpp::Node {
     rclcpp::CallbackGroup::SharedPtr _callback_group_external_agent;
     rclcpp::CallbackGroup::SharedPtr _callback_group_controller;
 
-    void visionCallback(const vision::msg::Visionpkg::SharedPtr msg);
-    void updateWorldMap();
-  protected:
-    rclcpp::Publisher<ctr_msgs::msg::Command>::SharedPtr _pubActuator;
     rclcpp::Subscription<vision::msg::Visionpkg>::SharedPtr _subVision;
     rclcpp::TimerBase::SharedPtr _timerVision;
     rclcpp::Service<ctr_msgs::srv::State>::SharedPtr _serviceExternalAgent;
     rclcpp::TimerBase::SharedPtr _timerCtr;
+    rclcpp::Publisher<ctr_msgs::msg::Command>::SharedPtr _pubActuator;
+
+    void visionCallback(const vision::msg::Visionpkg::SharedPtr msg);
+    void updateWorldMap();
+  protected:
+    qint8 _id;
+    std::string _team;
 
     InfoBus* infoBus() {return _ib;}
 
@@ -46,8 +46,11 @@ class Controller : public rclcpp::Node {
                              const std::shared_ptr<ctr_msgs::srv::State::Response> response) = 0;
 
     virtual void run() = 0;
+
+    void sendCommand(const ctr_msgs::msg::Command *message);
   public:
     Controller(std::string team, int id, Field *field, int frequency = 60);
+    ~Controller();
 };
 
 #endif // CONTROLLER_HPP
