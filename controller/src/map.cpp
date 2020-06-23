@@ -1,8 +1,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include <QtCore>
+#include <string>
 #include <iostream>
-#include "controller/ssl_controller.hpp"
-#include "utils/fields/field_ssl2019.hpp"
+#include "map/map_node.hpp"
 
 int main(int argc, char **argv) {
   // Command line argument:
@@ -15,13 +15,11 @@ int main(int argc, char **argv) {
   std::string team = argv[1];
   int id = atoi(argv[2]);
 
-  Field_SSL2019 field;
-  // ROS 2
+  //ROS 2
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
-  auto ctr_node = std::make_shared<SSL_Controller>(team, id, &field);
-  executor.add_node(ctr_node);
-  executor.spin();
+  auto map_node = std::make_shared<Map_Node>(team, id, 60);
+  executor.add_node(map_node);
   rclcpp::shutdown();
   return 0;
 }

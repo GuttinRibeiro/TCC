@@ -1,0 +1,6 @@
+int8 id
+int32 group
+---
+Position pos
+float32 orientation
+bool hasorientation

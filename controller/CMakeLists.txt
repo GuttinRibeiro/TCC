@@ -18,17 +18,18 @@ find_package(ctr_msgs REQUIRED)
 find_package(vision REQUIRED)
 
 add_executable(ssl_controller src/ssl_robot_ctr.cpp src/controller/controller.cpp
-    src/utils/vector.cpp src/controller/infobus.cpp src/controller/ssl_controller.cpp
+    src/utils/vector.cpp src/controller/ssl_controller.cpp
     src/utils/utils.cpp)
-ament_target_dependencies(ssl_controller rclcpp ctr_msgs vision)
+ament_target_dependencies(ssl_controller rclcpp ctr_msgs)
 
-target_include_directories(ssl_controller PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+add_executable(worldmap src/map.cpp src/map/map_node.cpp src/map/worldmap.hpp src/utils/vector.cpp)
+ament_target_dependencies(worldmap rclcpp ctr_msgs vision)
 
 target_link_libraries(ssl_controller Qt5::Widgets)
+target_link_libraries(worldmap Qt5::Widgets)
 
-install(TARGETS ssl_controller
+
+install(TARGETS ssl_controller worldmap
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
 

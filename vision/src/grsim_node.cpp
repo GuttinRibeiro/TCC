@@ -10,7 +10,7 @@
 
 RoboCupSSLClient * init_connection(int port = 10006, string net_ref_address="224.5.23.2", string net_ref_interface="") {
   RoboCupSSLClient *_client = new RoboCupSSLClient(port, net_ref_address, net_ref_interface);  
-  if(_client == NULL) {
+  if(_client == nullptr) {
     printf("[ERROR] Impossible to allocate a client to grsim\n");
     exit(-1);
   }

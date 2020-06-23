@@ -9,9 +9,9 @@ class WorldMap {
 private:
   QMutex _mutex;
   QHash<int, QHash<qint8, Element>> _elements;
-  double _threshold;
+  float _threshold;
 public:
-  WorldMap(double persistense_time) {
+  WorldMap(float persistense_time) {
     _mutex.unlock();
     _threshold = persistense_time;
   }
