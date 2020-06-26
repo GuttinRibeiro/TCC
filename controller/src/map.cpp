@@ -6,18 +6,37 @@
 #include "utils/fields/field_ssl2019.hpp"
 #include <QApplication>
 #include <thread>
+#include <ctime>
 
-void runROS(int argc, char **argv, std::string team, int id, Field *field) {
+#include "map/gui/soccerview.hh"
+
+void runROS(int argc, char **argv, std::string team, int id, Field *field, WorldMap *wm) {
   //ROS 2
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
-  auto map_node = std::make_shared<Map_Node>(team, id, field);
+  auto map_node = std::make_shared<Map_Node>(team, id, field, wm);
   executor.add_node(map_node);
   std:: cout << "Number of threads: "<< executor.get_number_of_threads() << "\n";
   executor.spin();
 }
 
+[[noreturn]] void runGUI(GLSoccerView *view, WorldMap *wm, Field *field, int frequency = 30) {
+  const auto timeWindow = std::chrono::milliseconds(1000/frequency);
+  while (true) {
+    auto start = std::chrono::steady_clock::now();
+    view->updateFieldGeometry(field);
+    view->updateDetection(wm->getElement(Groups::BALL, 0), wm->getGroup(Groups::BLUE), wm->getGroup(Groups::YELLOW));
+    auto end = std::chrono::steady_clock::now();
+    auto elapsed = end - start;
+    auto timeToWait = timeWindow - elapsed;
+    if(timeToWait > std::chrono::milliseconds::zero()) {
+      std::this_thread::sleep_for(timeToWait);
+    }
+  }
+}
+
 int main(int argc, char **argv) {
+  QApplication app(argc, argv);
   // Command line argument:
   if(argc != 3) {
     std::cout << "Please specify which robot should be controlled (color id)\n";
@@ -29,23 +48,30 @@ int main(int argc, char **argv) {
   int id = atoi(argv[2]);
 
   Field_SSL2019 field;
+  WorldMap wm(5000/60);
+  GLSoccerView *view = new GLSoccerView();
+  view->show();
 
-  QApplication app(argc, argv);
-/*  //ROS 2
-  rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor executor;
-  auto map_node = std::make_shared<Map_Node>(team, id, &field);
-  executor.add_node(map_node);
-  std:: cout << "Number of threads: "<< executor.get_number_of_threads() << "\n";
-  executor.spin();*/
+  std::thread guiThread(runGUI, view, &wm, &field, 40);
+  std::thread rosThread(runROS, argc, argv, team, id, &field, &wm);
 
-  std::thread rosThread(runROS, argc, argv, team, id, &field);
+//  //ROS 2
+//  rclcpp::init(argc, argv);
+//  rclcpp::executors::MultiThreadedExecutor executor;
+//  auto map_node = std::make_shared<Map_Node>(team, id, &field, &wm);
+//  executor.add_node(map_node);
+//  std:: cout << "Number of threads: "<< executor.get_number_of_threads() << "\n";
+//  executor.spin();
 
   // Block main thread
   int retn = app.exec();
+  guiThread.join();
   rosThread.join();
 
   // Stop node
   rclcpp::shutdown();
+
+  view->close();
+  delete view;
   return retn;
 }

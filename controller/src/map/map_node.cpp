@@ -4,10 +4,10 @@
 #include <chrono>
 #include "../utils/groups.hpp"
 
-Map_Node::Map_Node(const std::string team, const int id, Field *f, int frequency) : Node("map_"+team+std::to_string(id)) {
+Map_Node::Map_Node(const std::string team, const int id, Field *f, WorldMap *wm, int frequency) : Node("map_"+team+std::to_string(id)) {
   _team = team;
   _id = (qint8)id;
-  _wm = new WorldMap(5*1000/frequency);
+  _wm = wm;
   _field = f;
   _time_now = 0.0;
   clock_gettime(CLOCK_REALTIME, &_start);
@@ -18,7 +18,7 @@ Map_Node::Map_Node(const std::string team, const int id, Field *f, int frequency
   _callback_group_vision = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_worldmap_update = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_information_services = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  _callback_gui = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+//  _callback_gui = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   // Initialize ROS 2 interaces
   // Vision
@@ -39,15 +39,15 @@ Map_Node::Map_Node(const std::string team, const int id, Field *f, int frequency
                                                                  std::bind(&Map_Node::getPosition, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                  rmw_qos_profile_services_default,
                                                                  _callback_information_services);
-  // GUI
-  _timerGUI = this->create_wall_timer(std::chrono::milliseconds(1000/30), std::bind(&Map_Node::updateGUI, this), _callback_gui);
-  _view = new GLSoccerView();
-  _view->show();
+//  // GUI
+//  _timerGUI = this->create_wall_timer(std::chrono::milliseconds(1000/30), std::bind(&Map_Node::updateGUI, this), _callback_gui);
+//  _view = new GLSoccerView();
+//  _view->show();
 }
 
 Map_Node::~Map_Node() {
-  _view->close();
-  delete _view;
+//  _view->close();
+//  delete _view;
   delete _wm;
 }
 
@@ -113,7 +113,7 @@ void Map_Node::getPosition(const std::shared_ptr<rmw_request_id_t> request_heade
   }
 }
 
-void Map_Node::updateGUI() {
-  _view->updateFieldGeometry(_field);
-  _view->updateDetection(_wm->getElement(Groups::BALL, 0), _wm->getGroup(Groups::BLUE), _wm->getGroup(Groups::YELLOW));
-}
+//void Map_Node::updateGUI() {
+//  _view->updateFieldGeometry(_field);
+//  _view->updateDetection(_wm->getElement(Groups::BALL, 0), _wm->getGroup(Groups::BLUE), _wm->getGroup(Groups::YELLOW));
+//}
