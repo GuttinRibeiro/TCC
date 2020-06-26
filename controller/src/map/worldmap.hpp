@@ -36,6 +36,7 @@ public:
   }
   void updateElement(const int &group, const qint8 &id, const float &radius, const float &orientation, Vector position) {
     _mutex.lock();
+    std::string groupName;
     Element elem;
     elem.setPosition(position);
     elem.setOrientation(orientation);
@@ -44,7 +45,7 @@ public:
     elem.setRadius(radius);
     // TODO: como calcular a velocidade?
 
-    QHash<qint8, Element> aux;
+    QHash<qint8, Element> aux = _elements.value(group);
     aux.insert(id, elem);
     _elements.insert(group, aux);
     _mutex.unlock();

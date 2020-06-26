@@ -18,7 +18,6 @@ Map_Node::Map_Node(const std::string team, const int id, Field *f, WorldMap *wm,
   _callback_group_vision = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_worldmap_update = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_information_services = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-//  _callback_gui = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   // Initialize ROS 2 interaces
   // Vision
@@ -39,15 +38,9 @@ Map_Node::Map_Node(const std::string team, const int id, Field *f, WorldMap *wm,
                                                                  std::bind(&Map_Node::getPosition, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                  rmw_qos_profile_services_default,
                                                                  _callback_information_services);
-//  // GUI
-//  _timerGUI = this->create_wall_timer(std::chrono::milliseconds(1000/30), std::bind(&Map_Node::updateGUI, this), _callback_gui);
-//  _view = new GLSoccerView();
-//  _view->show();
 }
 
 Map_Node::~Map_Node() {
-//  _view->close();
-//  delete _view;
   delete _wm;
 }
 
@@ -79,12 +72,12 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
 }
 
 void Map_Node::updateWorldMap() {
-  // Stop timer
-  clock_gettime(CLOCK_REALTIME, &_stop);
-  // Count how many seconds have passed since last packet received
-  _time_now += ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
-  // Check all timestamps and remove old information
-  _wm->checkElements(_time_now);
+//  // Stop timer
+//  clock_gettime(CLOCK_REALTIME, &_stop);
+//  // Count how many seconds have passed since last packet received
+//  _time_now += ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
+//  // Check all timestamps and remove old information
+//  _wm->checkElements(_time_now);
 }
 
 void Map_Node::getInformation(const std::shared_ptr<rmw_request_id_t> request_header,
@@ -113,7 +106,3 @@ void Map_Node::getPosition(const std::shared_ptr<rmw_request_id_t> request_heade
   }
 }
 
-//void Map_Node::updateGUI() {
-//  _view->updateFieldGeometry(_field);
-//  _view->updateDetection(_wm->getElement(Groups::BALL, 0), _wm->getGroup(Groups::BLUE), _wm->getGroup(Groups::YELLOW));
-//}

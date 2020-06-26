@@ -26,6 +26,46 @@
 #include "field.hh"
 #include "gvector.hh"
 
+namespace FieldConstantsRoboCup2019 {
+    const double kFieldLength = 9000.0;
+    const double kFieldWidth = 6000.0;
+    const double kGoalWidth = 1000.0;
+    const double kGoalDepth = 200.0;
+    const double kBoundaryWidth = 250.0;
+
+    // WR
+    const double kCenterRadius = 500.0;
+    const double kDefenseRadius = 1000.0;
+    const double kDefenseStretch = 2000.0;
+
+    const double kLineThickness = 10.0;
+    const double kXMax = (kFieldLength-2*kLineThickness)/2;
+    const double kXMin = -kXMax;
+    const double kYMax = (kFieldWidth-kLineThickness)/2;
+    const double kYMin = -kYMax;
+
+    const std::size_t kNumFieldLines = 11;
+    const FieldLine kFieldLines[kNumFieldLines] = {
+      FieldLine("TopTouchLine", kXMin-kLineThickness/2, kYMax, kXMax+kLineThickness/2, kYMax, kLineThickness),
+      FieldLine("BottomTouchLine", kXMin-kLineThickness/2, kYMin, kXMax+kLineThickness/2, kYMin, kLineThickness),
+      FieldLine("LeftGoalLine", kXMin, kYMin, kXMin, kYMax, kLineThickness),
+      FieldLine("RightGoalLine", kXMax, kYMin, kXMax, kYMax, kLineThickness),
+      FieldLine("HalfwayLine", 0, kYMin, 0, kYMax, kLineThickness),
+      FieldLine("LeftPenaltyStretch", kXMin+kDefenseRadius, -kDefenseStretch/2, kXMin+kDefenseRadius, kDefenseStretch/2, kLineThickness),
+      FieldLine("RightPenaltyStretch", kXMax-kDefenseRadius, -kDefenseStretch/2, kXMax-kDefenseRadius, kDefenseStretch/2, kLineThickness),
+      FieldLine("LeftFieldLeftDefenseLine", kXMin, kDefenseStretch/2, kXMin+kDefenseRadius+kLineThickness/2, kDefenseStretch/2, kLineThickness),
+      FieldLine("LeftFieldRightDefenseLine", kXMin, -kDefenseStretch/2, kXMin+kDefenseRadius+kLineThickness/2, -kDefenseStretch/2, kLineThickness),
+      FieldLine("RightFieldLeftDefenseLine", kXMax, kDefenseStretch/2, kXMax-kDefenseRadius-kLineThickness/2, kDefenseStretch/2, kLineThickness),
+      FieldLine("RightFieldRightDefenseLine", kXMax, -kDefenseStretch/2, kXMax-kDefenseRadius-kLineThickness/2, -kDefenseStretch/2, kLineThickness),
+    };
+
+    const std::size_t kNumFieldArcs = 1;
+    const FieldCircularArc kFieldArcs[kNumFieldArcs] = {
+      FieldCircularArc("CenterCircle",              0,     0,                  kCenterRadius-kLineThickness/2,  0,        2*M_PI,   kLineThickness)
+    };
+
+}
+
 namespace FieldConstantsRoboCup2015 {
     const double kFieldLength = 9000.0;
     const double kFieldWidth = 6000.0;

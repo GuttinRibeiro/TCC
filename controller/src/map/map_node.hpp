@@ -15,7 +15,6 @@
 
 // My libs
 #include "worldmap.hpp"
-//#include "gui/soccerview.hh"
 #include "../utils/field.hpp"
 
 class Map_Node : public rclcpp::Node {
@@ -27,21 +26,16 @@ private:
   timespec _start, _stop;
   double _time_now;
 
-//  // Graphical client
-//  GLSoccerView *_view;
-
   // Callback groups to separate work into queues
   rclcpp::CallbackGroup::SharedPtr _callback_group_vision;
   rclcpp::CallbackGroup::SharedPtr _callback_worldmap_update;
   rclcpp::CallbackGroup::SharedPtr _callback_information_services;
-//  rclcpp::CallbackGroup::SharedPtr _callback_gui;
 
   // ROS interfaces
   rclcpp::Subscription<ctr_msgs::msg::Visionpkg>::SharedPtr _subVision;
   rclcpp::TimerBase::SharedPtr _timerUpdate;
   rclcpp::Service<ctr_msgs::srv::Inforequest>::SharedPtr _infoService;
   rclcpp::Service<ctr_msgs::srv::Positionrequest>::SharedPtr _posService;
-//  rclcpp::TimerBase::SharedPtr _timerGUI;
 
   void updateGUI();
   void visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg);
