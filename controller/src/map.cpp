@@ -9,6 +9,7 @@
 #include <ctime>
 
 #include "map/gui/soccerview.hh"
+#include "map/exithandler.hh"
 
 void runROS(int argc, char **argv, std::string team, int id, Field *field, WorldMap *wm) {
   //ROS 2
@@ -37,6 +38,8 @@ void runROS(int argc, char **argv, std::string team, int id, Field *field, World
 
 int main(int argc, char **argv) {
   QApplication app(argc, argv);
+  app.setApplicationName("Map");
+  app.setApplicationVersion("0.0");
   // Command line argument:
   if(argc != 3) {
     std::cout << "Please specify which robot should be controlled (color id)\n";
@@ -48,20 +51,15 @@ int main(int argc, char **argv) {
   int id = atoi(argv[2]);
 
   Field_SSL2019 field;
-  WorldMap wm(5000/60);
+  WorldMap wm(5000/40);
   GLSoccerView *view = new GLSoccerView();
   view->show();
 
   std::thread guiThread(runGUI, view, &wm, &field, 40);
   std::thread rosThread(runROS, argc, argv, team, id, &field, &wm);
 
-//  //ROS 2
-//  rclcpp::init(argc, argv);
-//  rclcpp::executors::MultiThreadedExecutor executor;
-//  auto map_node = std::make_shared<Map_Node>(team, id, &field, &wm);
-//  executor.add_node(map_node);
-//  std:: cout << "Number of threads: "<< executor.get_number_of_threads() << "\n";
-//  executor.spin();
+  // Setup ExitHandler
+  ExitHandler::setup(&app);
 
   // Block main thread
   int retn = app.exec();

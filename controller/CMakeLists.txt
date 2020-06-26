@@ -80,7 +80,7 @@ set (libs ${libs} sslvision)
 
 # Build worldmap
 add_executable(worldmap ${GCLIENT_MOC_SRCS} src/map.cpp src/map/map_node.cpp src/map/worldmap.hpp src/utils/vector.cpp
-    src/map/gui/gltext.cc src/map/gui/soccerview.cc src/map/gui/util/field.cc)
+    src/map/gui/gltext.cc src/map/gui/soccerview.cc src/map/gui/util/field.cc src/map/exithandler.cc)
 ament_target_dependencies(worldmap rclcpp ctr_msgs vision)
 
 target_link_libraries(worldmap ${libs})
