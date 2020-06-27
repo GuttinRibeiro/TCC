@@ -44,12 +44,18 @@ namespace FieldConstantsRoboCup2019 {
     const double kYMax = (kFieldWidth-kLineThickness)/2;
     const double kYMin = -kYMax;
 
-    const std::size_t kNumFieldLines = 11;
+    const std::size_t kNumFieldLines = 17;
     const FieldLine kFieldLines[kNumFieldLines] = {
       FieldLine("TopTouchLine", kXMin-kLineThickness/2, kYMax, kXMax+kLineThickness/2, kYMax, kLineThickness),
       FieldLine("BottomTouchLine", kXMin-kLineThickness/2, kYMin, kXMax+kLineThickness/2, kYMin, kLineThickness),
       FieldLine("LeftGoalLine", kXMin, kYMin, kXMin, kYMax, kLineThickness),
       FieldLine("RightGoalLine", kXMax, kYMin, kXMax, kYMax, kLineThickness),
+      FieldLine("LeftGoalNet", kXMin-kGoalDepth, -kGoalWidth/2, kXMin-kGoalDepth, kGoalWidth/2, kLineThickness),
+      FieldLine("LeftGoalBottomBox", kXMin-kGoalDepth, -kGoalWidth/2, kXMin, -kGoalWidth/2, kLineThickness),
+      FieldLine("LeftGoalUpperBox", kXMin-kGoalDepth, kGoalWidth/2, kXMin, kGoalWidth/2, kLineThickness),
+      FieldLine("RightGoalNet", kXMax+kGoalDepth, -kGoalWidth/2, kXMax+kGoalDepth, kGoalWidth/2, kLineThickness),
+      FieldLine("RightGoalBottomBox", kXMax+kGoalDepth, -kGoalWidth/2, kXMax, -kGoalWidth/2, kLineThickness),
+      FieldLine("RightGoalUpperBox", kXMax+kGoalDepth, kGoalWidth/2, kXMax, kGoalWidth/2, kLineThickness),
       FieldLine("HalfwayLine", 0, kYMin, 0, kYMax, kLineThickness),
       FieldLine("LeftPenaltyStretch", kXMin+kDefenseRadius, -kDefenseStretch/2, kXMin+kDefenseRadius, kDefenseStretch/2, kLineThickness),
       FieldLine("RightPenaltyStretch", kXMax-kDefenseRadius, -kDefenseStretch/2, kXMax-kDefenseRadius, kDefenseStretch/2, kLineThickness),

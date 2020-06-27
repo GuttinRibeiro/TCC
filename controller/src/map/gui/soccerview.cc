@@ -67,33 +67,6 @@ GLSoccerView::GLSoccerView(QWidget* parent) :
   resetView();
 }
 
-/*void GLSoccerView::updateDefaultFieldDimensions(const Competitions::Competition &fieldType) {
-    if(fieldType == Competitions::VSS) {
-        fieldDim.field_length = FieldConstantsVSS2008::kFieldLength;
-        fieldDim.field_width = FieldConstantsVSS2008::kFieldWidth;
-        fieldDim.boundary_width = FieldConstantsVSS2008::kBoundaryWidth;
-        fieldDim.lines.clear();
-        for(size_t i=0; i<FieldConstantsVSS2008::kNumFieldLines; i++)
-            fieldDim.lines.push_back(new FieldLine(FieldConstantsVSS2008::kFieldLines[i]));
-        fieldDim.arcs.clear();
-        for(size_t i=0; i<FieldConstantsVSS2008::kNumFieldArcs; i++)
-            fieldDim.arcs.push_back(new FieldCircularArc(FieldConstantsVSS2008::kFieldArcs[i]));
-        fieldDim.triangles.clear();
-        for(size_t i=0; i<FieldConstantsVSS2008::kNumFieldTriangles; i++)
-            fieldDim.triangles.push_back(new FieldTriangle(FieldConstantsVSS2008::kFieldTriangles[i]));
-    } else if(fieldType == Competitions::SSL) {
-        fieldDim.field_length = FieldConstantsRoboCup2015::kFieldLength;
-        fieldDim.field_width = FieldConstantsRoboCup2015::kFieldWidth;
-        fieldDim.boundary_width = FieldConstantsRoboCup2015::kBoundaryWidth;
-        fieldDim.lines.clear();
-        for(size_t i=0; i<FieldConstantsRoboCup2015::kNumFieldLines; i++)
-            fieldDim.lines.push_back(new FieldLine(FieldConstantsRoboCup2015::kFieldLines[i]));
-        fieldDim.arcs.clear();
-        for(size_t i=0; i<FieldConstantsRoboCup2015::kNumFieldArcs; i++)
-            fieldDim.arcs.push_back(new FieldCircularArc(FieldConstantsRoboCup2015::kFieldArcs[i]));
-    }
-}*/
-
 void GLSoccerView::updateDefaultFieldDimensions() {
   fieldDim.field_length = FieldConstantsRoboCup2019::kFieldLength;
   fieldDim.field_width = FieldConstantsRoboCup2019::kFieldWidth;
@@ -137,6 +110,14 @@ void GLSoccerView::updateFieldGeometry(Field *field) {
   fieldLines.append(FieldLine("HalfwayLine", 0, kYMin, 0, kYMax, kLineThickness));
   fieldLines.append(FieldLine("LeftPenaltyStretch", kXMin+kDefenseRadius-kLineThickness/2, -kDefenseStretch/2, kXMin+kDefenseRadius-kLineThickness/2, kDefenseStretch/2, kLineThickness));
   fieldLines.append(FieldLine("RightPenaltyStretch", kXMax-kDefenseRadius+kLineThickness/2, -kDefenseStretch/2, kXMax-kDefenseRadius+kLineThickness/2, kDefenseStretch/2, kLineThickness));
+
+  // Both goals
+  fieldLines.append(FieldLine("LeftGoalNet", kXMin-kGoalDepth, -kGoalWidth/2, kXMin-kGoalDepth, kGoalWidth/2, kLineThickness));
+  fieldLines.append(FieldLine("LeftGoalBottomBox", kXMin-kGoalDepth, -kGoalWidth/2, kXMin, -kGoalWidth/2, kLineThickness));
+  fieldLines.append(FieldLine("LeftGoalUpperBox", kXMin-kGoalDepth, kGoalWidth/2, kXMin, kGoalWidth/2, kLineThickness));
+  fieldLines.append(FieldLine("RightGoalNet", kXMax+kGoalDepth, -kGoalWidth/2, kXMax+kGoalDepth, kGoalWidth/2, kLineThickness));
+  fieldLines.append(FieldLine("RightGoalBottomBox", kXMax+kGoalDepth, -kGoalWidth/2, kXMax, -kGoalWidth/2, kLineThickness));
+  fieldLines.append(FieldLine("RightGoalUpperBox", kXMax+kGoalDepth, kGoalWidth/2, kXMax, kGoalWidth/2, kLineThickness));
 
   // Center circle
   fieldArcs.append(FieldCircularArc("CenterCircle", 0, 0, kCenterRadius-kLineThickness/2, 0, 2*M_PI, kLineThickness));
