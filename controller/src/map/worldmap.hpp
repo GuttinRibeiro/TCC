@@ -13,7 +13,7 @@ private:
 public:
   WorldMap(float persistense_time) {
     _mutex.unlock();
-    _threshold = persistense_time;
+    _threshold = persistense_time/1000;
   }
   void checkElements(const double &now) {
     _mutex.lock();

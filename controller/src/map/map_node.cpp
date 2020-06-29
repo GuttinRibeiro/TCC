@@ -72,12 +72,12 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
 }
 
 void Map_Node::updateWorldMap() {
-//  // Stop timer
-//  clock_gettime(CLOCK_REALTIME, &_stop);
-//  // Count how many seconds have passed since last packet received
-//  _time_now += ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
-//  // Check all timestamps and remove old information
-//  _wm->checkElements(_time_now);
+  // Stop timer
+  clock_gettime(CLOCK_REALTIME, &_stop);
+  // Count how many seconds have passed since last packet received
+  _time_now += ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
+  // Check all timestamps and remove old information
+  _wm->checkElements(_time_now);
 }
 
 void Map_Node::getInformation(const std::shared_ptr<rmw_request_id_t> request_header,
