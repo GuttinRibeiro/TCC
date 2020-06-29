@@ -38,8 +38,6 @@ void runROS(int argc, char **argv, std::string team, int id, Field *field, World
 
 int main(int argc, char **argv) {
   QApplication app(argc, argv);
-  app.setApplicationName("Map");
-  app.setApplicationVersion("0.0");
   // Command line argument:
   if(argc != 3) {
     std::cout << "Please specify which robot should be controlled (color id)\n";
@@ -49,6 +47,10 @@ int main(int argc, char **argv) {
 
   std::string team = argv[1];
   int id = atoi(argv[2]);
+  QString window = QString::fromStdString("Map: "+team+" "+ std::to_string(id));
+
+  app.setApplicationName(window);
+  app.setApplicationVersion("0.0");
 
   Field_SSL2019 field;
   WorldMap wm(5000/40);

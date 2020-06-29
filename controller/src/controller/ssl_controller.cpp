@@ -19,26 +19,11 @@ SSL_Controller::~SSL_Controller() {
 void SSL_Controller::updateState(const std::shared_ptr<rmw_request_id_t> request_header,
                                  const std::shared_ptr<ctr_msgs::srv::State::Request> request,
                                  const std::shared_ptr<ctr_msgs::srv::State::Response> response) {
-
+  (void) request_header;
+  response->feedback = "State updated successfully";
 }
 
 void SSL_Controller::run() {
-  /*//std::cout << "SSL Controller running for robot " << _team << " " << (int)_id << "\n";
-  Vector desiredVel = this->infoBus()->ballPosition()-this->infoBus()->myPosition();
-  desiredVel = desiredVel/desiredVel.norm();
-  float desiredAngle = Utils::getAngle(desiredVel);
-
-  if(Utils::distance(infoBus()->myPosition(), infoBus()->ballPosition()) < 0.2f) {
-    desiredVel = Vector(0.0, 0.0, 0.0, false);
-    kick();
-    spinner();
-  }
-
-  if(fabs(desiredAngle-infoBus()->myOrientation()) < 0.1f) {
-    desiredAngle = 0.0;
-  }
-
-  sendVelocity(desiredVel.x(), desiredVel.y(), desiredAngle);*/
   spinner();
   kick(1.0f);
   sendVelocity(0.0f, 0.05f, 0.1f);

@@ -25,6 +25,9 @@ class Refbox_Interface : public rclcpp::Node {
         qint8 _yellowGk;
         QHash<int, QHash<qint8, rclcpp::Client<ctr_msgs::srv::State>::SharedPtr>> _clientTable;
 
+        rclcpp::CallbackGroup::SharedPtr _callback_group_timer;
+        rclcpp::CallbackGroup::SharedPtr _callback_group_client;
+
         void callback();
         void updateStates();
     public:
