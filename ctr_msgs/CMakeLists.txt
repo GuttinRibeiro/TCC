@@ -16,7 +16,13 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(ctr_msgs
    srv/State.srv
+   srv/Positionrequest.srv
+   srv/Inforequest.srv
    msg/Command.msg
+   msg/Ball.msg
+   msg/Robot.msg
+   msg/Visionpkg.msg
+   msg/Position.msg
 )
 
 ament_export_dependencies(rosidl_default_runtime)

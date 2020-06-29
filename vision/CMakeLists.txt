@@ -21,15 +21,7 @@ find_package(ament_cmake REQUIRED)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-
-find_package(rosidl_default_generators REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Robot.msg"
-  "msg/Ball.msg"
-  "msg/Visionpkg.msg"
- )
+find_package(ctr_msgs REQUIRED)
 
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -38,10 +30,9 @@ src/messages_robocup_ssl_geometry.proto
 src/messages_robocup_ssl_refbox_log.proto
 src/messages_robocup_ssl_wrapper.proto)
 
-ament_export_dependencies(rosidl_default_runtime)
 add_executable(grsim_node src/grsim_node.cpp ${PROTO_SRCS} ${PROTO_HDRS} 
 src/robocup_ssl_client.cpp src/netraw.cpp src/vision_pub.cpp src/utils.cpp)
-ament_target_dependencies(grsim_node rclcpp std_msgs)
+ament_target_dependencies(grsim_node rclcpp ctr_msgs)
 
 target_include_directories(grsim_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -52,8 +43,5 @@ target_link_libraries(grsim_node Qt5::Widgets ${Protobuf_LIBRARIES})
 install(TARGETS grsim_node
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
-
-rosidl_target_interfaces(grsim_node
-  ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ament_package()

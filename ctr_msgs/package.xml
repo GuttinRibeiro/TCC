@@ -3,9 +3,9 @@
 <package format="3">
   <name>ctr_msgs</name>
   <version>0.0.0</version>
-  <description>Controller messages</description>
-  <maintainer email="augusto.ribeiro@wr.sc.usp.br">aribeiro</maintainer>
-  <license>Check the repository</license>
+  <description>Contains all messages used by my controller</description>
+  <maintainer email="augusto.ribeiro.castro@usp.br">Augusto Ribeiro</maintainer>
+  <license>MIT License</license>
   <member_of_group>rosidl_interface_packages</member_of_group>
   <buildtool_depend>ament_cmake</buildtool_depend>
 

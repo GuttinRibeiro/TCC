@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   // ROS 2
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
-  auto ctr_node = std::make_shared<SSL_Controller>(team, id, &field); // Change later for my SSL controller
+  auto ctr_node = std::make_shared<SSL_Controller>(team, id, &field);
   executor.add_node(ctr_node);
   executor.spin();
   rclcpp::shutdown();
