@@ -27,6 +27,10 @@ void SSL_Controller::run() {
   spinner();
   kick(1.0f);
   sendVelocity(0.0f, 0.05f, 0.1f);
+  Vector mypos = infoBus()->myPosition();
+  std::cout << "My position: " << mypos.x() << ", " << mypos.y() << "\n";
+  Vector pos = infoBus()->ourGoalRightPost();
+  std::cout << "Our goal Right post: " << pos.x() << ", " << pos.y() << "\n";
 }
 
 void SSL_Controller::kick(float kickPower) {

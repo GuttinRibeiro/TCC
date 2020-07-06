@@ -79,6 +79,7 @@ void VisionNode::split_packages() {
         rob_msg.x = selected.position().x();
         rob_msg.y = selected.position().y();
         rob_msg.id = selected.id();
+        rob_msg.orientation = selected.orientation();
         rob_msg.team = "blue";
         message.robots.push_back(rob_msg);
 
@@ -161,6 +162,7 @@ void VisionNode::split_packages() {
         rob_msg.x = selected.position().x();
         rob_msg.y = selected.position().y();
         rob_msg.id = selected.id();
+        rob_msg.orientation = selected.orientation();
         rob_msg.team = "yellow";
         message.robots.push_back(rob_msg);
 
@@ -252,7 +254,6 @@ void VisionNode::processBalls(const QList<std::pair<int,SSL_DetectionBall> > &ba
     float realY = 0.0;
     //RCLCPP_INFO(this->get_logger(), "Number of balls: %d", balls.size());
     for(it=balls.constBegin(); it!=balls.constEnd(); it++) {
-        const int camId = it->first;
         const SSL_DetectionBall ball = it->second;
 
         realX += ball.x()*MM2METER;
