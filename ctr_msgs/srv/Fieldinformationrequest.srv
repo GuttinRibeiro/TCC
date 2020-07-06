@@ -1,0 +1,5 @@
+string request
+---
+bool error
+Position pos
+float32 value

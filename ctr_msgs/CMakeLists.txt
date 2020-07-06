@@ -16,8 +16,9 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(ctr_msgs
    srv/State.srv
-   srv/Positionrequest.srv
+   srv/Elementrequest.srv
    srv/Inforequest.srv
+   srv/Fieldinformationrequest.srv
    msg/Command.msg
    msg/Ball.msg
    msg/Robot.msg

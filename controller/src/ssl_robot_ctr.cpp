@@ -15,11 +15,10 @@ int main(int argc, char **argv) {
   std::string team = argv[1];
   int id = atoi(argv[2]);
 
-  Field_SSL2019 field;
   // ROS 2
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
-  auto ctr_node = std::make_shared<SSL_Controller>(team, id, &field);
+  auto ctr_node = std::make_shared<SSL_Controller>(team, id);
   executor.add_node(ctr_node);
   executor.spin();
   rclcpp::shutdown();

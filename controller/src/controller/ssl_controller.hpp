@@ -19,7 +19,7 @@ private:
   void spinner();
   void chipkick(float kickPower = 8.0f, float kickAngle = 0.0f);
 public:
-  SSL_Controller(std::string team, int id, Field *field, int frequency = 60);
+  SSL_Controller(std::string team, int id, int frequency = 60);
   ~SSL_Controller();
 };
 

@@ -5,7 +5,7 @@
 #include <iostream>
 #include "../utils/utils.hpp"
 
-SSL_Controller::SSL_Controller(std::string team, int id, Field *field, int frequency) : Controller (team, id, field, frequency) {
+SSL_Controller::SSL_Controller(std::string team, int id, int frequency) : Controller (team, id, frequency) {
   _kick = false;
   _spinner = false;
   _kickSpeed = 0.0;

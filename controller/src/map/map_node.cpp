@@ -4,11 +4,12 @@
 #include <chrono>
 #include "../utils/groups.hpp"
 
-Map_Node::Map_Node(const std::string team, const int id, Field *f, WorldMap *wm, int frequency) : Node("map_"+team+std::to_string(id)) {
+Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : Node("map_"+team+std::to_string(id)) {
   _team = team;
   _id = (qint8)id;
   _wm = wm;
-  _field = f;
+  _side = side;
+  _field = field;
   _time_now = 0.0;
   clock_gettime(CLOCK_REALTIME, &_start);
 
@@ -18,6 +19,7 @@ Map_Node::Map_Node(const std::string team, const int id, Field *f, WorldMap *wm,
   _callback_group_vision = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_worldmap_update = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_information_services = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  _callback_field_information = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   // Initialize ROS 2 interaces
   // Vision
@@ -34,10 +36,14 @@ Map_Node::Map_Node(const std::string team, const int id, Field *f, WorldMap *wm,
                                                                   std::bind(&Map_Node::getInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                   rmw_qos_profile_services_default,
                                                                   _callback_information_services);
-  _posService = this->create_service<ctr_msgs::srv::Positionrequest>("map_service/"+robotToken+"/position",
-                                                                 std::bind(&Map_Node::getPosition, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+  _posService = this->create_service<ctr_msgs::srv::Elementrequest>("map_service/"+robotToken+"/position",
+                                                                 std::bind(&Map_Node::getElement, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                  rmw_qos_profile_services_default,
                                                                  _callback_information_services);
+  _fieldService = this->create_service<ctr_msgs::srv::Fieldinformationrequest>("map_service/"+robotToken+"/field",
+                                                                               std::bind(&Map_Node::getFieldInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                                                                               rmw_qos_profile_services_default,
+                                                                               _callback_field_information);
 }
 
 Map_Node::~Map_Node() {
@@ -90,9 +96,9 @@ void Map_Node::getInformation(const std::shared_ptr<rmw_request_id_t> request_he
   }
 }
 
-void Map_Node::getPosition(const std::shared_ptr<rmw_request_id_t> request_header,
-                           const std::shared_ptr<ctr_msgs::srv::Positionrequest::Request> request,
-                           const std::shared_ptr<ctr_msgs::srv::Positionrequest::Response> response) {
+void Map_Node::getElement(const std::shared_ptr<rmw_request_id_t> request_header,
+                           const std::shared_ptr<ctr_msgs::srv::Elementrequest::Request> request,
+                           const std::shared_ptr<ctr_msgs::srv::Elementrequest::Response> response) {
   (void) request_header;
   response->pos.x = _wm->getElement(request->group, request->id).position().x();
   response->pos.y = _wm->getElement(request->group, request->id).position().y();
@@ -104,5 +110,184 @@ void Map_Node::getPosition(const std::shared_ptr<rmw_request_id_t> request_heade
   } else {
     response->hasorientation = true;
   }
+  response->radius = _wm->getElement(request->group, request->id).radius();
 }
 
+void Map_Node::getFieldInformation(const std::shared_ptr<rmw_request_id_t> request_header,
+                                   const std::shared_ptr<ctr_msgs::srv::Fieldinformationrequest::Request> request,
+                                   const std::shared_ptr<ctr_msgs::srv::Fieldinformationrequest::Response> response) {
+  (void) request_header;
+  std::string req = request->request;
+
+  response->error = false;
+  if(req == "our goal") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = 0.0;
+      response->pos.x = _field->minX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = 0.0;
+      response->pos.x = _field->maxX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "their goal") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = 0.0;
+      response->pos.x = _field->maxX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = 0.0;
+      response->pos.x = _field->minX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "field center") {
+    response->pos.isvalid = true;
+    response->pos.z = 0.0;
+    response->pos.y = 0.0;
+    response->pos.x = 0.0;
+  } else if(req == "our goal left post") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = -_field->goalWidth()/2;
+      response->pos.x = _field->minX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->goalWidth()/2;
+      response->pos.x = _field->maxX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "our goal right post") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->goalWidth()/2;
+      response->pos.x = _field->minX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = -_field->goalWidth()/2;
+      response->pos.x = _field->maxX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "their goal left post") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = -_field->goalWidth()/2;
+      response->pos.x = _field->maxX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->goalWidth()/2;
+      response->pos.x = _field->minX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "their goal right post") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = -_field->goalWidth()/2;
+      response->pos.x = _field->maxX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->goalWidth()/2;
+      response->pos.x = _field->minX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "our field left corner") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->minY();
+      response->pos.x = _field->minX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->maxY();
+      response->pos.x = _field->maxX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "our field right corner") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->maxY();
+      response->pos.x = _field->minX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->minY();
+      response->pos.x = _field->maxX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "their field left corner") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->maxY();
+      response->pos.x = _field->maxX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->minY();
+      response->pos.x = _field->minX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "their field right corner") {
+    if(_side == "left") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->minY();
+      response->pos.x = _field->maxX();
+    } else if (_side == "right") {
+      response->pos.z = 0;
+      response->pos.isvalid = true;
+      response->pos.y = _field->maxY();
+      response->pos.x = _field->minX();
+    } else {
+      response->error = true;
+    }
+  } else if(req == "center radius") {
+    response->value = _field->centerRadius();
+  } else if(req == "defense length") {
+    response->value = _field->defenseLength();
+  } else if(req == "defense width") {
+    response->value = _field->defenseWidth();
+  } else if(req == "field length") {
+    response->value = _field->length();
+  } else if(req == "field width") {
+    response->value = _field->width();
+  } else if(req == "goal width") {
+    response->value = _field->goalWidth();
+  } else if(req == "goal depth") {
+    response->value = _field->goalDepth();
+  } else if(req == "min x") {
+    response->value = _field->minX();
+  } else if(req == "max x") {
+    response->value =_field->maxX();
+  } else if(req == "min y") {
+    response->value = _field->minY();
+  } else if(req == "max y") {
+    response->value = _field->maxY();
+  } else {
+    response->error = true;
+  }
+}

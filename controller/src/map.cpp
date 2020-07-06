@@ -11,11 +11,11 @@
 #include "map/gui/soccerview.hh"
 #include "map/exithandler.hh"
 
-void runROS(int argc, char **argv, std::string team, int id, Field *field, WorldMap *wm) {
+void runROS(int argc, char **argv, std::string team, int id, std::string side, Field *field, WorldMap *wm) {
   //ROS 2
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
-  auto map_node = std::make_shared<Map_Node>(team, id, field, wm);
+  auto map_node = std::make_shared<Map_Node>(team, id, side, wm, field);
   executor.add_node(map_node);
   std:: cout << "Number of threads: "<< executor.get_number_of_threads() << "\n";
   executor.spin();
@@ -39,15 +39,16 @@ void runROS(int argc, char **argv, std::string team, int id, Field *field, World
 int main(int argc, char **argv) {
   QApplication app(argc, argv);
   // Command line argument:
-  if(argc != 3) {
-    std::cout << "Please specify which robot should be controlled (color id)\n";
+  if(argc != 4) {
+    std::cout << "Please specify which robot should be controlled (color id side)\n";
     std::cout << argc << std::endl;
     return 0;
   }
 
   std::string team = argv[1];
   int id = atoi(argv[2]);
-  QString window = QString::fromStdString("Map: "+team+" "+ std::to_string(id));
+  std::string side = argv[3];
+  QString window = QString::fromStdString("Map: "+team+" "+ std::to_string(id) + " " + side);
 
   app.setApplicationName(window);
   app.setApplicationVersion("0.0");
@@ -58,7 +59,7 @@ int main(int argc, char **argv) {
   view->show();
 
   std::thread guiThread(runGUI, view, &wm, &field, 40);
-  std::thread rosThread(runROS, argc, argv, team, id, &field, &wm);
+  std::thread rosThread(runROS, argc, argv, team, id, side, &field, &wm);
 
   // Setup ExitHandler
   ExitHandler::setup(&app);

@@ -11,7 +11,8 @@
 #include "ctr_msgs/msg/robot.hpp"
 #include "ctr_msgs/msg/visionpkg.hpp"
 #include "ctr_msgs/srv/inforequest.hpp"
-#include "ctr_msgs/srv/positionrequest.hpp"
+#include "ctr_msgs/srv/elementrequest.hpp"
+#include "ctr_msgs/srv/fieldinformationrequest.hpp"
 
 // My libs
 #include "worldmap.hpp"
@@ -21,6 +22,7 @@ class Map_Node : public rclcpp::Node {
 private:
   qint8 _id;
   std::string _team;
+  std::string _side;
   WorldMap *_wm;
   Field *_field;
   timespec _start, _stop;
@@ -30,12 +32,14 @@ private:
   rclcpp::CallbackGroup::SharedPtr _callback_group_vision;
   rclcpp::CallbackGroup::SharedPtr _callback_worldmap_update;
   rclcpp::CallbackGroup::SharedPtr _callback_information_services;
+  rclcpp::CallbackGroup::SharedPtr _callback_field_information;
 
   // ROS interfaces
   rclcpp::Subscription<ctr_msgs::msg::Visionpkg>::SharedPtr _subVision;
   rclcpp::TimerBase::SharedPtr _timerUpdate;
   rclcpp::Service<ctr_msgs::srv::Inforequest>::SharedPtr _infoService;
-  rclcpp::Service<ctr_msgs::srv::Positionrequest>::SharedPtr _posService;
+  rclcpp::Service<ctr_msgs::srv::Elementrequest>::SharedPtr _posService;
+  rclcpp::Service<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _fieldService;
 
   void updateGUI();
   void visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg);
@@ -43,11 +47,14 @@ private:
   void getInformation(const std::shared_ptr<rmw_request_id_t> request_header,
                       const std::shared_ptr<ctr_msgs::srv::Inforequest::Request> request,
                       const std::shared_ptr<ctr_msgs::srv::Inforequest::Response> response);
-  void getPosition(const std::shared_ptr<rmw_request_id_t> request_header,
-                      const std::shared_ptr<ctr_msgs::srv::Positionrequest::Request> request,
-                      const std::shared_ptr<ctr_msgs::srv::Positionrequest::Response> response);
+  void getElement(const std::shared_ptr<rmw_request_id_t> request_header,
+                      const std::shared_ptr<ctr_msgs::srv::Elementrequest::Request> request,
+                      const std::shared_ptr<ctr_msgs::srv::Elementrequest::Response> response);
+  void getFieldInformation(const std::shared_ptr<rmw_request_id_t> request_header,
+                           const std::shared_ptr<ctr_msgs::srv::Fieldinformationrequest::Request> request,
+                           const std::shared_ptr<ctr_msgs::srv::Fieldinformationrequest::Response> response);
 public:
-  Map_Node(const std::string team, const int id, Field *f, WorldMap *wm, int frequency = 60);
+  Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency = 60);
   ~Map_Node();
 };
 

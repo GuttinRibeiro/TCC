@@ -8,19 +8,28 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ctr_msgs/msg/command.hpp"
 #include "ctr_msgs/srv/state.hpp"
+#include "ctr_msgs/srv/positionrequest.hpp"
+#include "ctr_msgs/srv/inforequest.hpp"
+#include "ctr_msgs/srv/fieldinformationrequest.hpp"
 #include "../utils/field.hpp"
-//#include "infobus.hpp"
+#include "../utils/vector.hpp"
+#include "infobus.hpp"
 
 class Controller : public rclcpp::Node {
   private:
     rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
     rclcpp::CallbackGroup::SharedPtr _callback_group_external_agent;
     rclcpp::CallbackGroup::SharedPtr _callback_group_controller;
+    rclcpp::CallbackGroup::SharedPtr _callback_group_map;
 
     rclcpp::Service<ctr_msgs::srv::State>::SharedPtr _serviceExternalAgent;
     rclcpp::TimerBase::SharedPtr _timerCtr;
     rclcpp::Publisher<ctr_msgs::msg::Command>::SharedPtr _pubActuator;
+    rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr _clientPositionRequest;
+    rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr _clientInfoRequest;
+    rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _clientFieldRequest;
 
+    InfoBus *_ib;
   protected:
     qint8 _id;
     std::string _team;
@@ -32,8 +41,9 @@ class Controller : public rclcpp::Node {
     virtual void run() = 0;
 
     void sendCommand(const ctr_msgs::msg::Command *message);
+    InfoBus* infoBus() const {return _ib;}
   public:
-    Controller(std::string team, int id, Field *field, int frequency = 60);
+    Controller(std::string team, int id, int frequency = 60);
     ~Controller();
 };
 

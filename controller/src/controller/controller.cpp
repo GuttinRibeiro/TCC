@@ -5,10 +5,10 @@
 
 using namespace std::chrono_literals;
 
-Controller::Controller(std::string team, int id, Field *field, int frequency) : Node("controller_"+team+"_"+std::to_string(id)){
+Controller::Controller(std::string team, int id, int frequency) : Node("controller_"+team+"_"+std::to_string(id)){
   _team = team;
   _id = (qint8) id;
-//  _ib = new InfoBus(_wm, _id, _team);
+  _ib = new InfoBus(_id, _team, &_clientPositionRequest, &_clientInfoRequest, &_clientFieldRequest);
 
   std::string robotToken = team+"_"+std::to_string(id);
 
@@ -16,6 +16,7 @@ Controller::Controller(std::string team, int id, Field *field, int frequency) : 
   _callback_group_actuator = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_group_external_agent = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_group_controller = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  _callback_group_map = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   // Initialize ROS 2 interaces
   // Actuator
@@ -31,11 +32,22 @@ Controller::Controller(std::string team, int id, Field *field, int frequency) : 
                                                                      std::bind(&Controller::updateState, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                      rmw_qos_profile_services_default,
                                                                      _callback_group_actuator);
+  // Map
+  _clientPositionRequest = this->create_client<ctr_msgs::srv::Elementrequest>("map_service/"+robotToken+"/position",
+                                                                               rmw_qos_profile_services_default,
+                                                                               _callback_group_map);
 
+  _clientInfoRequest = this->create_client<ctr_msgs::srv::Inforequest>("map_service/"+robotToken+"/info",
+                                                                       rmw_qos_profile_services_default,
+                                                                       _callback_group_map);
+
+  _clientFieldRequest = this->create_client<ctr_msgs::srv::Fieldinformationrequest>("map_service/"+robotToken+"/field",
+                                                                                    rmw_qos_profile_services_default,
+                                                                                    _callback_group_map);
 }
 
 Controller::~Controller() {
-
+  delete _ib;
 }
 
 void Controller::sendCommand(const ctr_msgs::msg::Command *message) {
