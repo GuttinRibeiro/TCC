@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include "../utils/utils.hpp"
+#include <ctime>
 
 SSL_Controller::SSL_Controller(std::string team, int id, int frequency) : Controller (team, id, frequency) {
   _kick = false;
@@ -27,10 +28,14 @@ void SSL_Controller::run() {
   spinner();
   kick(1.0f);
   sendVelocity(0.0f, 0.05f, 0.1f);
-  Vector mypos = infoBus()->myPosition();
-  std::cout << "My position: " << mypos.x() << ", " << mypos.y() << "\n";
-  Vector pos = infoBus()->ourGoalRightPost();
-  std::cout << "Our goal Right post: " << pos.x() << ", " << pos.y() << "\n";
+//  timespec start, stop;
+//  clock_gettime(CLOCK_REALTIME, &start);
+//  Vector mypos = infoBus()->myPosition();
+//  clock_gettime(CLOCK_REALTIME, &stop);
+//  std::cout << "Time to request information: " << ((stop.tv_sec*1E9+stop.tv_nsec)-(start.tv_sec*1E9+start.tv_nsec))/1E9 << " s\n";
+//  std::cout << "My position: " << mypos.x() << ", " << mypos.y() << "\n";
+//  Vector pos = infoBus()->ourGoalRightPost();
+//  std::cout << "Our goal Right post: " << pos.x() << ", " << pos.y() << "\n";
 }
 
 void SSL_Controller::kick(float kickPower) {

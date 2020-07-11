@@ -21,7 +21,7 @@ void runROS(int argc, char **argv, std::string team, int id, std::string side, F
   executor.spin();
 }
 
-[[noreturn]] void runGUI(GLSoccerView *view, WorldMap *wm, Field *field, int frequency = 30) {
+[[noreturn]] void runGUI(GLSoccerView *view, WorldMap *wm, Field *field, int frequency = 50) {
   const auto timeWindow = std::chrono::milliseconds(1000/frequency);
   while (true) {
     auto start = std::chrono::steady_clock::now();
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
   GLSoccerView *view = new GLSoccerView();
   view->show();
 
-  std::thread guiThread(runGUI, view, &wm, &field, 40);
+  std::thread guiThread(runGUI, view, &wm, &field, 60);
   std::thread rosThread(runROS, argc, argv, team, id, side, &field, &wm);
 
   // Setup ExitHandler

@@ -8,7 +8,6 @@ using namespace std::chrono_literals;
 Controller::Controller(std::string team, int id, int frequency) : Node("controller_"+team+"_"+std::to_string(id)){
   _team = team;
   _id = (qint8) id;
-  _ib = new InfoBus(_id, _team, &_clientPositionRequest, &_clientInfoRequest, &_clientFieldRequest);
 
   std::string robotToken = team+"_"+std::to_string(id);
 
@@ -44,6 +43,9 @@ Controller::Controller(std::string team, int id, int frequency) : Node("controll
   _clientFieldRequest = this->create_client<ctr_msgs::srv::Fieldinformationrequest>("map_service/"+robotToken+"/field",
                                                                                     rmw_qos_profile_services_default,
                                                                                     _callback_group_map);
+
+  // Info bus
+  _ib = new InfoBus(_id, _team, &_clientPositionRequest, &_clientInfoRequest, &_clientFieldRequest);
 }
 
 Controller::~Controller() {
