@@ -6,11 +6,11 @@
 #include <string>
 #include <ctime>
 #include "rclcpp/rclcpp.hpp"
-#include "ctr_msgs/msg/command.hpp"
 #include "ctr_msgs/srv/state.hpp"
 #include "ctr_msgs/srv/elementrequest.hpp"
 #include "ctr_msgs/srv/inforequest.hpp"
 #include "ctr_msgs/srv/fieldinformationrequest.hpp"
+#include "ctr_msgs/msg/command.hpp"
 #include "../utils/field.hpp"
 #include "../utils/vector.hpp"
 #include "infobus.hpp"
@@ -39,8 +39,7 @@ class Controller : public rclcpp::Node {
                              const std::shared_ptr<ctr_msgs::srv::State::Response> response) = 0;
 
     virtual void run() = 0;
-
-    void sendCommand(const ctr_msgs::msg::Command *message);
+    void send_command(const ctr_msgs::msg::Command &msg);
     InfoBus* infoBus() const {return _ib;}
   public:
     Controller(std::string team, int id, int frequency = 60);

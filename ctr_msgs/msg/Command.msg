@@ -1,5 +1,5 @@
-string team
-int8 id
-bool spinner
+bool hasholdballinformation
+bool holdball
+bool haskickinformation
 float32 kickspeedy
 float32 kickspeedz

@@ -5,12 +5,13 @@
 #include <iostream>
 #include "../utils/utils.hpp"
 #include <ctime>
+#include "ctr_msgs/msg/command.hpp"
+#define KICK_PRECISION 0.01
 
 SSL_Controller::SSL_Controller(std::string team, int id, int frequency) : Controller (team, id, frequency) {
-  _kick = false;
-  _spinner = false;
-  _kickSpeed = 0.0;
-  _kickAngle = 0.0;
+  _holdBall = false;
+  _kickSpeedY = 0.0;
+  _kickSpeedZ = 0.0;
 }
 
 SSL_Controller::~SSL_Controller() {
@@ -25,9 +26,7 @@ void SSL_Controller::updateState(const std::shared_ptr<rmw_request_id_t> request
 }
 
 void SSL_Controller::run() {
-  spinner();
   kick(1.0f);
-  sendVelocity(0.0f, 0.05f, 0.1f);
 //  timespec start, stop;
 //  clock_gettime(CLOCK_REALTIME, &start);
 //  Vector mypos = infoBus()->myPosition();
@@ -39,46 +38,39 @@ void SSL_Controller::run() {
 }
 
 void SSL_Controller::kick(float kickPower) {
-  _kick = true;
-  _kickSpeed = kickPower;
+  if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION) {
+    _kickSpeedY = kickPower;
+    _kickSpeedZ = 0.0;
+    ctr_msgs::msg::Command cmd;
+    cmd.haskickinformation = true;
+    cmd.hasholdballinformation = false;
+    cmd.kickspeedz = 0.0;
+    cmd.kickspeedy = kickPower;
+    send_command(cmd);
+  }
 }
 
 void SSL_Controller::chipkick(float kickPower, float kickAngle) {
-  _kick = true;
-  _kickSpeed = kickPower;
-  _kickAngle = kickAngle;
-}
-
-void SSL_Controller::spinner() {
-  _spinner = true;
-}
-
-void SSL_Controller::sendVelocity(float vx, float vy, float vang) {
-  auto message = ctr_msgs::msg::Command();
-  message.id = _id;
-  message.team = _team;
-  message.vx = vx;
-  message.vy = vy;
-  message.vang = vang;
-
-  if(_kick && _kickAngle == 0.0f) {
-    message.kickspeedz = 0.0;
-    message.kickspeedy = _kickSpeed;
-    message.chipkick = false;
-  } else if(_kick) {
-    message.kickspeedy = _kickSpeed*cos(_kickAngle);
-    message.kickspeedz = _kickSpeed*sin(_kickAngle);
-    message.chipkick = true;
+  if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION || fabs(_kickSpeedZ-kickPower) > KICK_PRECISION) {
+    _kickSpeedY = kickPower*cos(kickAngle);
+    _kickSpeedZ = kickPower*sin(kickAngle);
+    ctr_msgs::msg::Command cmd;
+    cmd.haskickinformation = true;
+    cmd.hasholdballinformation = false;
+    cmd.kickspeedz = _kickSpeedZ;
+    cmd.kickspeedy = _kickSpeedY;
+    send_command(cmd);
   }
-
-  if(_spinner) {
-    message.spinner = true;
-    _spinner = false;
-  }
-
-  _kick = false;
-  _kickAngle = 0.0;
-  _kickSpeed = 0.0;
-
-  this->sendCommand(&message);
 }
+
+void SSL_Controller::holdBall(bool turnOn) {
+  if(turnOn != _holdBall) {
+    _holdBall = turnOn;
+    ctr_msgs::msg::Command cmd;
+    cmd.haskickinformation = false;
+    cmd.hasholdballinformation = true;
+    cmd.holdball = turnOn;
+    send_command(cmd);
+  }
+}
+

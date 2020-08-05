@@ -16,7 +16,7 @@ class Grsim_Actuator_Sub : public Actuator_Sub {
     private:
         // Internal variables:
         QUdpSocket _socket;
-        QMap<std::pair<std::string, qint8>, Command> _cmd_buffer;
+        Command _cmd_buffer;
 
         // Implementing virtual methods:
         void send_cmd(ctr_msgs::msg::Command::SharedPtr msg);

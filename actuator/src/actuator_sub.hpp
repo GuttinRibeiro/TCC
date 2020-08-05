@@ -13,9 +13,9 @@ class Actuator_Sub : public rclcpp::Node {
         rclcpp::Subscription<ctr_msgs::msg::Command>::SharedPtr _subsTable1;
         rclcpp::Subscription<ctr_msgs::msg::Velocity>::SharedPtr _subsTable2;
 
+    protected:
         int _id;
         std::string _team;
-    protected:
 
         virtual void send_cmd(ctr_msgs::msg::Command::SharedPtr msg) = 0;
         virtual void send_velocity(ctr_msgs::msg::Velocity::SharedPtr msg) = 0;
