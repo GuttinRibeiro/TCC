@@ -27,6 +27,8 @@ void SSL_Controller::updateState(const std::shared_ptr<rmw_request_id_t> request
 
 void SSL_Controller::run() {
   kick(1.0f);
+  Vector pos = infoBus()->theirGoal();
+  goTo(pos);
 //  timespec start, stop;
 //  clock_gettime(CLOCK_REALTIME, &start);
 //  Vector mypos = infoBus()->myPosition();
@@ -74,3 +76,14 @@ void SSL_Controller::holdBall(bool turnOn) {
   }
 }
 
+ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, float orientation) {
+  ctr_msgs::msg::Position desiredPos;
+  desiredPos.isvalid = true;
+  desiredPos.x = destination.x();
+  desiredPos.y = destination.y();
+  desiredPos.z = destination.z();
+  ctr_msgs::msg::Navigation ret;
+  ret.destination = desiredPos;
+  ret.orientation = orientation;
+  return ret;
+}
