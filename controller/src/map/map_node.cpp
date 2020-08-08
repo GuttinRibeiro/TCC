@@ -4,7 +4,7 @@
 #include <chrono>
 #include "../utils/groups.hpp"
 
-Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : Node("map_"+team+std::to_string(id)) {
+Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : Entity ("map_"+team+std::to_string(id), frequency) {
   _team = team;
   _id = (qint8)id;
   _wm = wm;
@@ -17,7 +17,6 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
 
   // Create callback groups for multi-threading execution
   _callback_group_vision = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  _callback_worldmap_update = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_information_services = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_field_information = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
@@ -28,9 +27,6 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken, rclcpp::QoS(10),
                                                                  std::bind(&Map_Node::visionCallback, this, std::placeholders::_1),
                                                                  vision_opt);
-  // World Map timer
-  _timerUpdate = this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Map_Node::updateWorldMap, this), _callback_worldmap_update);
-
   // Information services
   _infoService = this->create_service<ctr_msgs::srv::Inforequest>("map_service/"+robotToken+"/info",
                                                                   std::bind(&Map_Node::getInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
@@ -75,7 +71,7 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
   clock_gettime(CLOCK_REALTIME, &_start);
 }
 
-void Map_Node::updateWorldMap() {
+void Map_Node::run() {
   // Stop timer
   clock_gettime(CLOCK_REALTIME, &_stop);
   // Count how many seconds have passed since last packet received
