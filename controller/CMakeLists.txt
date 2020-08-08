@@ -90,7 +90,7 @@ if(USE_QT5)
 endif()
 
 # Build controller
-add_executable(ssl_controller src/ssl_robot_ctr.cpp src/controller/controller.cpp
+add_executable(ssl_controller src/ssl_robot_ctr.cpp src/utils/entity.cpp src/controller/controller.cpp
     src/utils/vector.cpp src/controller/ssl_controller.cpp
     src/utils/utils.cpp src/controller/infobus.cpp)
 ament_target_dependencies(ssl_controller rclcpp ctr_msgs)

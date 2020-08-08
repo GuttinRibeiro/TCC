@@ -1,12 +1,9 @@
-#include <inttypes.h>
-#include <memory>
-#include <chrono>
 #include "controller.hpp"
 #include "../utils/utils.hpp"
 
 using namespace std::chrono_literals;
 
-Controller::Controller(std::string team, int id, int frequency) : Node("controller_"+team+"_"+std::to_string(id)){
+Controller::Controller(std::string team, int id, int frequency) : Entity ("controller_"+team+"_"+std::to_string(id), frequency){
   // Internal
   _team = team;
   _id = (qint8) id;
@@ -17,7 +14,6 @@ Controller::Controller(std::string team, int id, int frequency) : Node("controll
   _callback_group_actuator = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
   _callback_group_navigation = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
   _callback_group_external_agent = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-  _callback_group_controller = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
   _callback_group_map = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
   // Initialize ROS 2 interaces
@@ -31,10 +27,6 @@ Controller::Controller(std::string team, int id, int frequency) : Node("controll
   nav_opt.callback_group = _callback_group_navigation;
   _pubNavigation = this->create_publisher<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken,
                                                                      rclcpp::QoS(10), nav_opt);
-
-  // Controller
-  _timerCtr = this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Controller::run, this), _callback_group_controller);
-
   // External Agent
   _serviceExternalAgent = this->create_service<ctr_msgs::srv::State>("state_service/"+robotToken,
                                                                      std::bind(&Controller::updateState, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),

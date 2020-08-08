@@ -25,10 +25,15 @@ void SSL_Controller::updateState(const std::shared_ptr<rmw_request_id_t> request
   response->feedback = "State updated successfully";
 }
 
+void SSL_Controller::configure() {
+  std::cout << "SSL controller configured!\n";
+}
+
 void SSL_Controller::run() {
   kick(1.0f);
   Vector pos = infoBus()->theirGoal();
   goTo(pos);
+  std::cout << "SSL Controller running!\n";
 //  timespec start, stop;
 //  clock_gettime(CLOCK_REALTIME, &start);
 //  Vector mypos = infoBus()->myPosition();
