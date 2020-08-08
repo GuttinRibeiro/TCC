@@ -24,6 +24,9 @@ rosidl_generate_interfaces(ctr_msgs
    msg/Robot.msg
    msg/Visionpkg.msg
    msg/Position.msg
+   msg/Velocity.msg
+   msg/Navigation.msg
+   action/Nav.action
 )
 
 ament_export_dependencies(rosidl_default_runtime)

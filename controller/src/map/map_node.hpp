@@ -1,10 +1,8 @@
 #ifndef MAPNODE_HPP
 #define MAPNODE_HPP
 
-#include "rclcpp/rclcpp.hpp"
 #include <string>
 #include <QtCore>
-#include <ctime>
 
 // Vision messages
 #include "ctr_msgs/msg/ball.hpp"
@@ -17,8 +15,9 @@
 // My libs
 #include "worldmap.hpp"
 #include "../utils/field.hpp"
+#include "../utils/entity.hpp"
 
-class Map_Node : public rclcpp::Node {
+class Map_Node : public Entity {
 private:
   qint8 _id;
   std::string _team;
@@ -30,18 +29,18 @@ private:
 
   // Callback groups to separate work into queues
   rclcpp::CallbackGroup::SharedPtr _callback_group_vision;
-  rclcpp::CallbackGroup::SharedPtr _callback_worldmap_update;
   rclcpp::CallbackGroup::SharedPtr _callback_information_services;
   rclcpp::CallbackGroup::SharedPtr _callback_field_information;
 
   // ROS interfaces
   rclcpp::Subscription<ctr_msgs::msg::Visionpkg>::SharedPtr _subVision;
-  rclcpp::TimerBase::SharedPtr _timerUpdate;
   rclcpp::Service<ctr_msgs::srv::Inforequest>::SharedPtr _infoService;
   rclcpp::Service<ctr_msgs::srv::Elementrequest>::SharedPtr _posService;
   rclcpp::Service<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _fieldService;
 
-  void updateGUI();
+  std::string name() {return "Map Node";}
+  void configure() {return;}
+  void run();
   void visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg);
   void updateWorldMap();
   void getInformation(const std::shared_ptr<rmw_request_id_t> request_header,

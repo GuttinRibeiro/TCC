@@ -1,9 +1,5 @@
-float32 vx
-float32 vy
-float32 vang
-string team
-int8 id
-bool spinner
-bool chipkick
+bool hasholdballinformation
+bool holdball
+bool haskickinformation
 float32 kickspeedy
 float32 kickspeedz

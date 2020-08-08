@@ -45,6 +45,7 @@ else()
 endif()
 
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(ctr_msgs REQUIRED)
 find_package(vision REQUIRED)
 #include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
@@ -79,7 +80,7 @@ endif()
 set (libs ${libs} sslvision)
 
 # Build worldmap
-add_executable(worldmap ${GCLIENT_MOC_SRCS} src/map.cpp src/map/map_node.cpp src/map/worldmap.hpp src/utils/vector.cpp
+add_executable(worldmap ${GCLIENT_MOC_SRCS} src/map.cpp src/map/map_node.cpp src/utils/entity.cpp src/map/worldmap.hpp src/utils/vector.cpp
     src/map/gui/gltext.cc src/map/gui/soccerview.cc src/map/gui/util/field.cc src/map/exithandler.cc)
 ament_target_dependencies(worldmap rclcpp ctr_msgs vision)
 
@@ -89,7 +90,7 @@ if(USE_QT5)
 endif()
 
 # Build controller
-add_executable(ssl_controller src/ssl_robot_ctr.cpp src/controller/controller.cpp
+add_executable(ssl_controller src/ssl_robot_ctr.cpp src/utils/entity.cpp src/controller/controller.cpp
     src/utils/vector.cpp src/controller/ssl_controller.cpp
     src/utils/utils.cpp src/controller/infobus.cpp)
 ament_target_dependencies(ssl_controller rclcpp ctr_msgs)
@@ -99,8 +100,19 @@ if(USE_QT5)
         qt5_use_modules(ssl_controller Widgets)
 endif()
 
+# Build navigation
+#add_executable(ssl_navigation src/ssl_nav_node.cpp src/navigation/navigation.cpp
+#    src/utils/vector.cpp src/utils/utils.cpp src/controller/infobus.cpp
+#    src/navigation/navalg/navigation_algorithm.cpp)
+#ament_target_dependencies(ssl_navigation rclcpp rclcpp_action ctr_msgs)
+
+#target_link_libraries(ssl_navigation ${libs})
+#if(USE_QT5)
+#        qt5_use_modules(ssl_navigation Widgets)
+#endif()
+
 # Install
-install(TARGETS worldmap ssl_controller
+install(TARGETS worldmap ssl_controller #ssl_navigation
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
 

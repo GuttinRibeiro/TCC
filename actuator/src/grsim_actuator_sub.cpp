@@ -4,39 +4,51 @@
 #include "grSim_Packet.pb.h"
 #include <iostream>
 
-Grsim_Actuator_Sub::Grsim_Actuator_Sub(QHash<int, QList<qint8>> control_table, std::string nodeName, int nodeID, QHostAddress grsimAddress, int port) : Actuator_Sub(control_table, nodeName, nodeID) {
-    _socket.connectToHost(grsimAddress, port, QIODevice::WriteOnly);
+Grsim_Actuator_Sub::Grsim_Actuator_Sub(std::string team, int id, std::string nodeName, int nodeID, QHostAddress grsimAddress, int port) : Actuator_Sub(team, id, nodeName, nodeID) {
+  _socket.connectToHost(grsimAddress, port, QIODevice::WriteOnly);
+  _cmd_buffer.spinner = false;
+  _cmd_buffer.kickspeedy = 0.0;
+  _cmd_buffer.kickspeedz = 0.0;
 }
 
 void Grsim_Actuator_Sub::send_cmd(ctr_msgs::msg::Command::SharedPtr msg) {
-    std::cout << "Command received!\n";
-    grSim_Packet packet;
+  if(msg->hasholdballinformation) {
+    _cmd_buffer.spinner = msg->holdball;
+  }
 
-    // Set team and player number
-    packet.mutable_commands()->set_isteamyellow(msg->team == "yellow");
-    packet.mutable_commands()->set_timestamp(0.0);
-    grSim_Robot_Command* command = packet.mutable_commands()->add_robot_commands();
-    command->set_id((int)msg->id);
+  if(msg->haskickinformation) {
+    _cmd_buffer.kickspeedy = msg->kickspeedy;
+    _cmd_buffer.kickspeedz = msg->kickspeedz;
+  }
+  std::cout << "Command received!\n";
+}
 
-    // Robot command
-    command->set_wheelsspeed(false);
-    command->set_kickspeedx(msg->kickspeedy);
+void Grsim_Actuator_Sub::send_velocity(ctr_msgs::msg::Velocity::SharedPtr msg) {
+  grSim_Packet packet;
 
-    if(msg->chipkick) {
-        command->set_kickspeedz(msg->kickspeedz);
-    } else {
-        command->set_kickspeedz(0.0);
-    }
+  // Set team and player number
+  packet.mutable_commands()->set_isteamyellow(_team == "yellow");
+  packet.mutable_commands()->set_timestamp(0.0);
+  grSim_Robot_Command* command = packet.mutable_commands()->add_robot_commands();
+  command->set_id((int)_id);
 
-    command->set_spinner(msg->spinner);
-    command->set_velnormal(msg->vx);
-    command->set_veltangent(msg->vy);
-    command->set_velangular(msg->vang);
+  // Robot command
+  command->set_wheelsspeed(false);
 
-    // Send packet
-    std::string s;
-    packet.SerializeToString(&s);
-    if(_socket.write(s.c_str(), s.length()) == -1) {
-        std::cout << "[grSim Actuator] Failed to write to socket: " << _socket.errorString().toStdString() << "\n";
-    }
+  // Command information
+  command->set_kickspeedx(_cmd_buffer.kickspeedy);
+  command->set_kickspeedz(_cmd_buffer.kickspeedz);
+  command->set_spinner(_cmd_buffer.spinner);
+
+  // Velocity information
+  command->set_velnormal(msg->vx);
+  command->set_veltangent(msg->vy);
+  command->set_velangular(msg->vang);
+
+  // Send packet
+  std::string s;
+  packet.SerializeToString(&s);
+  if(_socket.write(s.c_str(), s.length()) == -1) {
+      std::cout << "[grSim Actuator] Failed to write to socket: " << _socket.errorString().toStdString() << "\n";
+  }
 }
