@@ -3,6 +3,7 @@
 
 #include <string>
 #include <QtCore>
+#include "rclcpp/rclcpp.hpp"
 
 // Vision messages
 #include "ctr_msgs/msg/ball.hpp"
@@ -17,7 +18,7 @@
 #include "../utils/field.hpp"
 #include "../utils/entity.hpp"
 
-class Map_Node : public Entity {
+class Map_Node : public Entity, public rclcpp::Node {
 private:
   qint8 _id;
   std::string _team;

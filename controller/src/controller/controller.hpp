@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <string>
+#include "rclcpp/rclcpp.hpp"
 #include "ctr_msgs/srv/state.hpp"
 #include "ctr_msgs/srv/elementrequest.hpp"
 #include "ctr_msgs/srv/inforequest.hpp"
@@ -14,7 +15,7 @@
 #include "../utils/entity.hpp"
 #include "infobus.hpp"
 
-class Controller : public Entity {
+class Controller : public Entity, public rclcpp::Node {
   private:
     rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
     rclcpp::CallbackGroup::SharedPtr _callback_group_external_agent;

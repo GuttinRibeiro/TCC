@@ -3,7 +3,7 @@
 
 using namespace std::chrono_literals;
 
-Controller::Controller(std::string team, int id, int frequency) : Entity ("controller_"+team+"_"+std::to_string(id), frequency){
+Controller::Controller(std::string team, int id, int frequency) : Entity (frequency), rclcpp::Node("controller_"+team+"_"+std::to_string(id)){
   // Internal
   _team = team;
   _id = (qint8) id;

@@ -1,9 +1,6 @@
 #include "entity.hpp"
-#include <inttypes.h>
-#include <memory>
-#include <chrono>
 
-Entity::Entity(std::string name, int frequency) : Node(name) {
+Entity::Entity(int frequency) {
   // Create a separate thread executing entity
   std::thread{std::bind(&Entity::execute, this, std::placeholders::_1), frequency}.detach();
 }

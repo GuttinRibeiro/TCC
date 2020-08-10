@@ -4,7 +4,7 @@
 #include <chrono>
 #include "../utils/groups.hpp"
 
-Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : Entity ("map_"+team+std::to_string(id), frequency) {
+Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : Entity (frequency), rclcpp::Node ("map_"+team+std::to_string(id)) {
   _team = team;
   _id = (qint8)id;
   _wm = wm;

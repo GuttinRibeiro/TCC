@@ -1,10 +1,14 @@
 #ifndef ENTITY_HPP
 #define ENTITY_HPP
 
-#include "rclcpp/rclcpp.hpp"
 #include <string>
+#include <thread>
+#include <chrono>
+#include <memory>
+#include <functional>
+#include <iostream>
 
-class Entity : public rclcpp::Node {
+class Entity {
 private:
   [[noreturn]] void execute(int frequency);
 private:
@@ -12,7 +16,7 @@ private:
   virtual void configure() = 0;
   virtual std::string name() = 0;
 public:
-  Entity(std::string name, int frequency);
+  Entity(int frequency);
 };
 
 #endif // ENTITY_HPP
