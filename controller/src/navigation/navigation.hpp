@@ -4,38 +4,45 @@
 #include <QtCore>
 #include <string>
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
+#include "../utils/entity.hpp"
 #include "ctr_msgs/srv/elementrequest.hpp"
 #include "ctr_msgs/srv/inforequest.hpp"
 #include "ctr_msgs/srv/fieldinformationrequest.hpp"
-#include "ctr_msgs/action/nav.hpp"
+#include "ctr_msgs/msg/velocity.hpp"
+#include "ctr_msgs/msg/navigation.hpp"
 #include "../controller/infobus.hpp"
+#include "../utils/vector.hpp"
+#include "navalg/navigation_algorithm.hpp"
 
-class Navigation : public rclcpp::Node {
+class Navigation : public Entity, public rclcpp::Node {
 private:
   rclcpp::CallbackGroup::SharedPtr _callback_group_map;
   rclcpp::CallbackGroup::SharedPtr _callback_group_server;
-  rclcpp::CallbackGroup::SharedPtr _callback_group_pathFinder;
-  rclcpp::CallbackGroup::SharedPtr _callback_group_pathFollower;
+  rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
+  rclcpp::CallbackGroup::SharedPtr _callback_group_nav_messages;
 
   rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr _clientElementRequest;
   rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr _clientInfoRequest;
   rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _clientFieldRequest;
-  rclcpp_action::Server<ctr_msgs::action::Nav>::SharedPtr _serverNavigation;
+  rclcpp::Publisher<ctr_msgs::msg::Velocity>::SharedPtr _pubActuator;
+  rclcpp::Subscription<ctr_msgs::msg::Navigation>::SharedPtr _subNavMessages;
 
   InfoBus *_ib;
+  Vector _destination;
+  float _orientation;
+  Navigation_Algorithm *_navAlg;
 
-  rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID &uuid,
-                                          std::shared_ptr<const ctr_msgs::action::Nav::Goal> goal);
-  void handle_accepted(const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_msgs::action::Nav>> goal_handle);
-  rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_msgs::action::Nav>> goal_handle);
-  void execute(const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_msgs::action::Nav>> goal_handle);
+  std::string name() {return "Navigation";}
+  void configure();
+  void run();
+  void callback(ctr_msgs::msg::Navigation::SharedPtr msg);
 protected:
   qint8 _id;
   std::string _team;
 
+  void sendVelocity(float vx, float vy, float vang);
 public:
-  Navigation(std::string team, int id);
+  Navigation(std::string team, int id, int frequency = 60);
   ~Navigation();
 };
 

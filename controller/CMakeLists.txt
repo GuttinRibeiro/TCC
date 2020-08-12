@@ -45,7 +45,7 @@ else()
 endif()
 
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
+#find_package(rclcpp_action REQUIRED)
 find_package(ctr_msgs REQUIRED)
 find_package(vision REQUIRED)
 #include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
@@ -101,18 +101,18 @@ if(USE_QT5)
 endif()
 
 # Build navigation
-#add_executable(ssl_navigation src/ssl_nav_node.cpp src/navigation/navigation.cpp
-#    src/utils/vector.cpp src/utils/utils.cpp src/controller/infobus.cpp
-#    src/navigation/navalg/navigation_algorithm.cpp)
-#ament_target_dependencies(ssl_navigation rclcpp rclcpp_action ctr_msgs)
+add_executable(ssl_navigation src/ssl_nav_node.cpp src/utils/entity.cpp src/navigation/navigation.cpp
+    src/utils/vector.cpp src/utils/utils.cpp src/controller/infobus.cpp
+    src/navigation/navalg/navigation_algorithm.cpp)
+ament_target_dependencies(ssl_navigation rclcpp rclcpp ctr_msgs)
 
-#target_link_libraries(ssl_navigation ${libs})
-#if(USE_QT5)
-#        qt5_use_modules(ssl_navigation Widgets)
-#endif()
+target_link_libraries(ssl_navigation ${libs})
+if(USE_QT5)
+        qt5_use_modules(ssl_navigation Widgets)
+endif()
 
 # Install
-install(TARGETS worldmap ssl_controller #ssl_navigation
+install(TARGETS worldmap ssl_controller ssl_navigation
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
 

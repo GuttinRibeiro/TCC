@@ -1,15 +1,26 @@
 #include "navigation.hpp"
+#include "../utils/utils.hpp"
 
-Navigation::Navigation(std::string team, int id) : Node("navigation_"+team+"_"+std::to_string(id)){
+#include "rclcpp_action/create_server.hpp"
+#include "rclcpp_action/server.hpp"
+
+Navigation::Navigation(std::string team, int id, int frequency) : Entity(frequency), rclcpp::Node("navigation_"+team+"_"+std::to_string(id)){
   _team = team;
   _id = (qint8)id;
   std::string robotToken = team+"_"+std::to_string(id);
+  _destination = Vector();
+  _orientation = 0.0;
 
   // Create callback groups for multi-threading execution
   _callback_group_map = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
   _callback_group_server = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-  _callback_group_pathFinder = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-  _callback_group_pathFollower = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  _callback_group_actuator= this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  _callback_group_nav_messages = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
+  // Actuator
+  auto act_opt = rclcpp::PublisherOptions();
+  act_opt.callback_group = _callback_group_actuator;
+  _pubActuator = this->create_publisher<ctr_msgs::msg::Velocity>("actuator/velocity/"+robotToken, rclcpp::QoS(10), act_opt);
 
   // Map
   _clientElementRequest = this->create_client<ctr_msgs::srv::Elementrequest>("map_service/"+robotToken+"/position",
@@ -24,40 +35,46 @@ Navigation::Navigation(std::string team, int id) : Node("navigation_"+team+"_"+s
                                                                                     rmw_qos_profile_services_default,
                                                                                     _callback_group_map);
 
-  // Info bus
-  _ib = new InfoBus(_id, _team, &_clientElementRequest, &_clientInfoRequest, &_clientFieldRequest);
-
-  // Navigation action server
-  _serverNavigation = rclcpp_action::create_server<ctr_msgs::action::Nav>(
-        this->get_node_base_interface(), this->get_node_clock_interface(),
-        this->get_node_logging_interface(), this->get_node_waitables_interface(),
-        "/nav"+robotToken, std::bind(&Navigation::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&Navigation::handle_cancel, this, std::placeholders::_1),
-        std::bind(&Navigation::handle_accepted, this, std::placeholders::_1),
-        rcl_action_server_get_default_options(), _callback_group_server);
+  // Controller subscriber
+  auto ctr_opt = rclcpp::SubscriptionOptions();
+  ctr_opt.callback_group = _callback_group_nav_messages;
+  _subNavMessages = this->create_subscription<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken, rclcpp::QoS(10),
+                                                                         std::bind(&Navigation::callback, this, std::placeholders::_1), ctr_opt);
 }
 
 Navigation::~Navigation() {
   delete _ib;
+  delete _navAlg;
 }
 
-rclcpp_action::GoalResponse Navigation::handle_goal(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const ctr_msgs::action::Nav::Goal> goal) {
-  (void)uuid;
-  if(goal->destination.isvalid == false) {
-    RCLCPP_INFO(this->get_logger(), "[Navigation] Rejecting goal request: destination received is not a valid position");
-    return rclcpp_action::GoalResponse::REJECT;
+void Navigation::sendVelocity(float vx, float vy, float vang) {
+  auto message = ctr_msgs::msg::Velocity();
+  message.vx = vx;
+  message.vy = vy;
+  message.vang = vang;
+  _pubActuator->publish(message);
+}
+
+void Navigation::configure() {
+  // Info bus
+  _ib = new InfoBus(_id, _team, &_clientElementRequest, &_clientInfoRequest, &_clientFieldRequest);
+
+  // Allocate a nav alg
+//  _navAlg = new Navigation_Algorithm(_ib);
+}
+
+void Navigation::callback(ctr_msgs::msg::Navigation::SharedPtr msg) {
+  _orientation = msg->orientation;
+  _destination.setX(msg->destination.x);
+  _destination.setY(msg->destination.y);
+  _destination.setZ(msg->destination.z);
+  _destination.setIsUnknown(false);
+}
+
+void Navigation::run() {
+  // Wait for a valid destination
+  if(_destination.isUnknown()) {
+    return;
   }
 
-  // TODO: tratar posição e orientação recebidos
-  return  rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-}
-
-void Navigation::handle_accepted(const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_msgs::action::Nav> > goal_handle) {
-  std::thread{std::bind(&Navigation::execute, this, std::placeholders::_1), goal_handle}.detach();
-}
-
-rclcpp_action::CancelResponse Navigation::handle_cancel(const std::shared_ptr<rclcpp_action::ServerGoalHandle<ctr_msgs::action::Nav>> goal_handle) {
-  RCLCPP_INFO(this->get_logger(), "[Navigation] A new final state was received. Last goal cancelled");
-  (void)goal_handle;
-  return rclcpp_action::CancelResponse::ACCEPT;
 }

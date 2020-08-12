@@ -293,3 +293,19 @@ Vector InfoBus::requestFieldPosition(std::string info_requested) const {
 
   return ret;
 }
+
+int InfoBus::ourGroup() const {
+  return _group;
+}
+
+int InfoBus::theirGroup() const {
+  if(_group == Groups::BLUE) {
+    return Groups::YELLOW;
+  }
+
+  if(_group == Groups::YELLOW) {
+    return Groups::BLUE;
+  }
+
+  return Groups::UNKNOWN;
+}
