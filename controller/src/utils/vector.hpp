@@ -52,6 +52,10 @@ class Vector {
     Vector operator/(float k) {
       return Vector(this->x()/k, this->y()/k, this->z()/k, false);
     }
+
+    Vector operator*(float k) {
+      return Vector(this->x()*k, this->y()*k, this->z()*k, false);
+    }
 };
 
 #endif // POSITION_HPP

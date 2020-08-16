@@ -50,6 +50,23 @@ public:
     _elements.insert(group, aux);
     _mutex.unlock();
   }
+  void addPath(const int &group, const qint8 &id, const QLinkedList<Vector> &path) {
+    if(_elements.contains(group)) {
+      _mutex.lock();
+      QHash<qint8, Element> aux = _elements.value(group);
+      if(aux.contains(id)) {
+        Element elem = aux.value(id);
+        elem.addPath(path);
+        aux.insert(id, elem);
+      } else {
+        std::cout << "[WorldMap] The required group does not contain the specified element\n";
+      }
+      _elements.insert(group, aux);
+      _mutex.unlock();
+    } else {
+       std::cout << "[WorldMap] The required group does not exist\n";
+    }
+  }
   Element getElement(const int &group, const qint8 &id) {
     _mutex.lock();
     Element ret;

@@ -638,24 +638,24 @@ void GLSoccerView::drawRobotsVelocities() {
     }
 }
 
-//void GLSoccerView::drawRobotTrajetory(const QLinkedList<Position> &path) {
-//    QLinkedList<Position>::const_iterator it;
-//    for(it=path.constBegin(); it!=path.constEnd()-1; it++){
-//        // Get path positions
-//        Position pos1 = *it;
-//        Position pos2 = *(it+1);
+void GLSoccerView::drawRobotTrajetory(const QLinkedList<Vector> &path) {
+    QLinkedList<Vector>::const_iterator it;
+    for(it=path.constBegin(); it!=path.constEnd()-1; it++){
+        // Get path positions
+        Vector pos1 = *it;
+        Vector pos2 = *(it+1);
 
-//        // Draw position X
-//        vector2d vec(pos1.x()*1000, pos1.y()*1000);
-//        drawX(vec);
+        // Draw position X
+        vector2d vec(pos1.x()*1000, pos1.y()*1000);
+        drawX(vec);
 
-//        // Draw line
-//        glBegin(GL_LINES);
-//        glVertex3d(pos1.x()*1000, pos1.y()*1000, 0.0);
-//        glVertex3d(pos2.x()*1000, pos2.y()*1000, 0.0);
-//        glEnd();
-//    }
-//}
+        // Draw line
+        glBegin(GL_LINES);
+        glVertex3d(pos1.x()*1000, pos1.y()*1000, 0.0);
+        glVertex3d(pos2.x()*1000, pos2.y()*1000, 0.0);
+        glEnd();
+    }
+}
 
 void GLSoccerView::drawX(vector2d nextPos) {
 	float halfThickness = 4;
@@ -704,7 +704,7 @@ void GLSoccerView::drawRobotsNextPositions() {
             glColor3d(0.0, 0.0, 1.0);
 		}
 		drawX(robotsNextPositions.at(i).second);
-        //drawRobotTrajetory(robotsPaths.at(i));
+    drawRobotTrajetory(robotsPaths.at(i));
 //		drawStippleLine(robots.at(i).loc, robotsNextPositions.at(i).second);
 	}
 	glPopAttrib();
@@ -716,6 +716,7 @@ void GLSoccerView::updateDetection(Element ballInfo, QHash<qint8, Element> blueT
   robots.clear();
   robotsVelocities.clear();
   robotsNextPositions.clear();
+  robotsPaths.clear();
   ballVelocity.set(0,0);
 
   vector2d velocity;
@@ -738,6 +739,9 @@ void GLSoccerView::updateDetection(Element ballInfo, QHash<qint8, Element> blueT
     robotsNextPositions.append(std::make_pair(robot.team, next));
     velocity.set(player.velocity().x(), player.velocity().y());
     robotsVelocities.append(velocity);
+    if(player.path().size() > 0) {
+      robotsPaths.append(player.path());
+    }
   }
 
   for(it = yellowTeam.begin(); it != yellowTeam.end(); it++) {
@@ -757,6 +761,9 @@ void GLSoccerView::updateDetection(Element ballInfo, QHash<qint8, Element> blueT
     robotsNextPositions.append(std::make_pair(robot.team, next));
     velocity.set(player.velocity().x(), player.velocity().y());
     robotsVelocities.append(velocity);
+    if(player.path().size() > 0) {
+      robotsPaths.append(player.path());
+    }
   }
 
   if(ballInfo.position().isUnknown() == false) {
