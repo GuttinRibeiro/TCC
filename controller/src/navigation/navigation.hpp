@@ -10,11 +10,12 @@
 #include "ctr_msgs/srv/fieldinformationrequest.hpp"
 #include "ctr_msgs/msg/velocity.hpp"
 #include "ctr_msgs/msg/navigation.hpp"
+#include "ctr_msgs/msg/path.hpp"
 #include "../controller/infobus.hpp"
 #include "../utils/vector.hpp"
-#include "navalg/navigation_algorithm.hpp"
+#include "navalg/pf.hpp"
 
-class Navigation : public Entity, public rclcpp::Node {
+class Navigation : public rclcpp::Node, public Entity {
 private:
   rclcpp::CallbackGroup::SharedPtr _callback_group_map;
   rclcpp::CallbackGroup::SharedPtr _callback_group_server;
@@ -24,6 +25,7 @@ private:
   rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr _clientElementRequest;
   rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr _clientInfoRequest;
   rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _clientFieldRequest;
+  rclcpp::Publisher<ctr_msgs::msg::Path>::SharedPtr _pubPath;
   rclcpp::Publisher<ctr_msgs::msg::Velocity>::SharedPtr _pubActuator;
   rclcpp::Subscription<ctr_msgs::msg::Navigation>::SharedPtr _subNavMessages;
 
@@ -36,6 +38,7 @@ private:
   void configure();
   void run();
   void callback(ctr_msgs::msg::Navigation::SharedPtr msg);
+  ctr_msgs::msg::Path generatePathMessage(QLinkedList<Vector> path) const;
 protected:
   qint8 _id;
   std::string _team;

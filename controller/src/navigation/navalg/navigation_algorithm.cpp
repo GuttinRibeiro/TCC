@@ -1,14 +1,20 @@
 #include "navigation_algorithm.hpp"
 #include <iostream>
+#include "../../utils/utils.hpp"
 #define MAX_NUM_ROBOTS 6
+#define FLOAT_ERROR 0.01
 
-Navigation_Algorithm::Navigation_Algorithm(InfoBus *ib, int frequency) : Entity(frequency) {
+Navigation_Algorithm::Navigation_Algorithm(InfoBus *ib, qint8 id, int frequency) : Entity(frequency) {
   if(ib == nullptr) {
     std::cout << "[Nav Alg] Invalid pointer to InfoBus received! Aborting...\n";
     return;
   }
+  _id = id;
   _ib = ib;
   _orientation = 0.0f;
+  _myPosition = Vector();
+  _newDesiredState = false;
+  _myOrientation = 0.0f;
   _ourGroup = _ib->ourGroup();
   _theirGroup = _ib->theirGroup();
   _path.clear();
@@ -16,9 +22,12 @@ Navigation_Algorithm::Navigation_Algorithm(InfoBus *ib, int frequency) : Entity(
 }
 
 void Navigation_Algorithm::setOrientation(float orientation) {
-  _mutex.lock();
-  _orientation = orientation;
-  _mutex.unlock();
+//  _mutex.lock();
+  if(fabs(_orientation - orientation) > FLOAT_ERROR) {
+    _orientation = orientation;
+    _newDesiredState = true;
+  }
+//  _mutex.unlock();
 }
 
 void Navigation_Algorithm::setDestination(Vector destination) {
@@ -27,9 +36,12 @@ void Navigation_Algorithm::setDestination(Vector destination) {
     return;
   }
 
-  _mutex.lock();
-  _destination = destination;
-  _mutex.unlock();
+//  _mutex.lock();
+  if(Utils::distance(_destination, destination) > FLOAT_ERROR || _destination.isUnknown()) {
+    _destination = destination;
+    _newDesiredState = true;
+  }
+//  _mutex.unlock();
 }
 
 QLinkedList<Vector> Navigation_Algorithm::path() {
@@ -53,6 +65,9 @@ void Navigation_Algorithm::ignoreObstacles() {
 void Navigation_Algorithm::avoidAll() {
   // Get all visible players of our team
   QList<qint8> ids = _ib->ourPlayers();
+  if(ids.contains(_id)) {
+    ids.removeAll(_id);
+  }
   _mutex.lock();
   for(quint8 i = 0; i < ids.size(); i++) {
     _obstacles.insert(std::make_pair(_ourGroup, ids.at(i)), _ib->robotPosition(_ourGroup, ids.at(i)));
@@ -115,6 +130,9 @@ void Navigation_Algorithm::avoidRobots(bool turnOn) {
   if(turnOn) {
     // Get all visible players of our team
     QList<qint8> ids = _ib->ourPlayers();
+    if(ids.contains(_id)) {
+      ids.removeAll(_id);
+    }
     _mutex.lock();
     for(quint8 i = 0; i < ids.size(); i++) {
       _obstacles.insert(std::make_pair(_ourGroup, ids.at(i)), _ib->robotPosition(_ourGroup, ids.at(i)));
@@ -135,6 +153,9 @@ void Navigation_Algorithm::avoidAllies(bool turnOn) {
   if(turnOn) {
     // Get all visible players of our team
     QList<qint8> ids = _ib->ourPlayers();
+    if(ids.contains(_id)) {
+      ids.removeAll(_id);
+    }
     _mutex.lock();
     for(quint8 i = 0; i < ids.size(); i++) {
       _obstacles.insert(std::make_pair(_ourGroup, ids.at(i)), _ib->robotPosition(_ourGroup, ids.at(i)));
@@ -155,4 +176,25 @@ void Navigation_Algorithm::avoidEnemies(bool turnOn) {
     }
     _mutex.unlock();
   }
+}
+
+void Navigation_Algorithm::run() {
+  // Update robot state
+  _myPosition = _ib->myPosition();
+  _myOrientation = _ib->myOrientation();
+
+  _mutex.lock();
+  // Check if a new path should be calculated
+  if(_newDesiredState) {
+    _path = calculatePath(_myPosition, _myOrientation, _path, _obstacles.values(), _destination, _orientation);
+    _newDesiredState = false;
+  } else {
+    // Update path tracking
+    _path  = updatePathTracking(_myPosition, _path);
+
+    if(checkCurrentPath(_myPosition, _myOrientation, _path, _obstacles.values())) {
+      _path = calculatePath(_myPosition, _myOrientation, _path, _obstacles.values(), _destination, _orientation);
+    }
+  }
+  _mutex.unlock();
 }

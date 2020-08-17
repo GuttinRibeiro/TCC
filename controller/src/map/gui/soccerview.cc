@@ -29,6 +29,8 @@
 
 #define METER2MM 1000.0
 
+#include <iostream>
+
 GLSoccerView::FieldDimensions::FieldDimensions() :
   field_length(FieldConstantsRoboCup2019::kFieldLength),
   field_width(FieldConstantsRoboCup2019::kFieldWidth),
@@ -704,9 +706,12 @@ void GLSoccerView::drawRobotsNextPositions() {
             glColor3d(0.0, 0.0, 1.0);
 		}
 		drawX(robotsNextPositions.at(i).second);
-    drawRobotTrajetory(robotsPaths.at(i));
 //		drawStippleLine(robots.at(i).loc, robotsNextPositions.at(i).second);
 	}
+
+  for(int i = 0; i < robotsPaths.size(); i++) {
+    drawRobotTrajetory(robotsPaths.at(i));
+  }
 	glPopAttrib();
 }
 
@@ -740,6 +745,7 @@ void GLSoccerView::updateDetection(Element ballInfo, QHash<qint8, Element> blueT
     velocity.set(player.velocity().x(), player.velocity().y());
     robotsVelocities.append(velocity);
     if(player.path().size() > 0) {
+      std::cout << "[ok]\n";
       robotsPaths.append(player.path());
     }
   }
