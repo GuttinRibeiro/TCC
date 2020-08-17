@@ -19,7 +19,7 @@
 #include "../utils/field.hpp"
 #include "../utils/entity.hpp"
 
-class Map_Node : public Entity, public rclcpp::Node {
+class Map_Node : public rclcpp::Node, public Entity {
 private:
   qint8 _id;
   std::string _team;
@@ -42,7 +42,7 @@ private:
   rclcpp::Service<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _fieldService;
 
   std::string name() {return "Map Node";}
-  void configure() {return;}
+  void configure();
   void run();
   void visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg);
   void pathUpdateCallback(const ctr_msgs::msg::Path::SharedPtr msg);

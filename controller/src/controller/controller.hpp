@@ -15,7 +15,7 @@
 #include "../utils/entity.hpp"
 #include "infobus.hpp"
 
-class Controller : public Entity, public rclcpp::Node {
+class Controller : public rclcpp::Node, public Entity {
   private:
     rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
     rclcpp::CallbackGroup::SharedPtr _callback_group_external_agent;

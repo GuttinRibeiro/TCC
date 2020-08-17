@@ -4,7 +4,7 @@
 #include <chrono>
 #include "../utils/groups.hpp"
 
-Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : Entity (frequency), rclcpp::Node ("map_"+team+std::to_string(id)) {
+Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : rclcpp::Node ("map_"+team+std::to_string(id)), Entity (frequency) {
   _team = team;
   _id = (qint8)id;
   _wm = wm;
@@ -91,6 +91,10 @@ void Map_Node::pathUpdateCallback(const ctr_msgs::msg::Path::SharedPtr msg) {
       std::cout << "[Map] Incorrect attempt to update path due to an invalid group provided\n";
     }
   }
+}
+
+void Map_Node::configure() {
+
 }
 
 void Map_Node::run() {
