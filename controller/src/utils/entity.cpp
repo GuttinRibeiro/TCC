@@ -1,8 +1,7 @@
 #include "entity.hpp"
 
 Entity::Entity(int frequency) {
-  // Create a separate thread executing entity
-  std::thread{std::bind(&Entity::execute, this, std::placeholders::_1), frequency}.detach();
+  _frequency = frequency;
 }
 
 [[noreturn]] void Entity::execute(int frequency) {
@@ -24,4 +23,9 @@ Entity::Entity(int frequency) {
       std::cout << "[" +name()+ "] Required frequency is too high!\n";
     }
   }
+}
+
+void Entity::start() {
+  // Create a separate thread executing entity
+  std::thread{std::bind(&Entity::execute, this, std::placeholders::_1), _frequency}.detach();
 }

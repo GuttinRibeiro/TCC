@@ -19,6 +19,8 @@ Navigation_Algorithm::Navigation_Algorithm(InfoBus *ib, qint8 id, int frequency)
   _theirGroup = _ib->theirGroup();
   _path.clear();
   _mutex.unlock();
+  // Start this entity's thread
+  this->start();
 }
 
 void Navigation_Algorithm::setOrientation(float orientation) {

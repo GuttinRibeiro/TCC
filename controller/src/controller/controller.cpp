@@ -47,6 +47,9 @@ Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("
 
   // Info bus
   _ib = new InfoBus(_id, _team, &_clientPositionRequest, &_clientInfoRequest, &_clientFieldRequest);
+
+  // Start this entity's thread
+  this->start();
 }
 
 Controller::~Controller() {

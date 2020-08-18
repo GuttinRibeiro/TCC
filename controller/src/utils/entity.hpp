@@ -10,6 +10,7 @@
 
 class Entity {
 private:
+  int _frequency;
   [[noreturn]] void execute(int frequency);
 private:
   virtual void run() = 0;
@@ -17,6 +18,7 @@ private:
   virtual std::string name() = 0;
 public:
   Entity(int frequency);
+  void start();
 };
 
 #endif // ENTITY_HPP

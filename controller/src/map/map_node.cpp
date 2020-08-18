@@ -44,6 +44,8 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
                                                                                std::bind(&Map_Node::getFieldInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                                rmw_qos_profile_services_default,
                                                                                _callback_field_information);
+  // Start this entity's thread
+  this->start();
 }
 
 Map_Node::~Map_Node() {

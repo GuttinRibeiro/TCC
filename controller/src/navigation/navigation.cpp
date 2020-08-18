@@ -47,6 +47,7 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   ctr_opt.callback_group = _callback_group_nav_messages;
   _subNavMessages = this->create_subscription<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken, rclcpp::QoS(10),
                                                                          std::bind(&Navigation::callback, this, std::placeholders::_1), ctr_opt);
+  this->start();
   std::cout << "Navigation created!\n";
 }
 
