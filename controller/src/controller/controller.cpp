@@ -57,27 +57,27 @@ void Controller::send_command(const ctr_msgs::msg::Command &msg) {
   _pubActuator->publish(msg);
 }
 
-void Controller::goToLookTo(Vector destination, float orientation) {
+void Controller::goToLookTo(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   if(destination.isUnknown()) {
     std::cout << "[Controller] Desired destination is unknown!\n";
     return;
   }
 
   orientation = Utils::wrapToTwoPi(orientation);
-  _pubNavigation->publish(encodeNavMessage(destination, orientation));
+  _pubNavigation->publish(encodeNavMessage(destination, orientation, avoidBall, avoidAllies, avoidEnemies));
 }
 
-void Controller::goTo(Vector destination) {
+void Controller::goTo(Vector destination, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   if(destination.isUnknown()) {
     std::cout << "[Controller] Desired destination is unknown!\n";
     return;
   }
 
   float orientation = Utils::wrapToTwoPi(infoBus()->myOrientation());
-  _pubNavigation->publish(encodeNavMessage(destination, orientation));
+  _pubNavigation->publish(encodeNavMessage(destination, orientation, avoidBall, avoidAllies, avoidEnemies));
 }
 
 void Controller::lookTo(float orientation) {
   orientation = Utils::wrapToTwoPi(orientation);
-  _pubNavigation->publish(encodeNavMessage(infoBus()->myPosition(), orientation));
+  _pubNavigation->publish(encodeNavMessage(infoBus()->myPosition(), orientation, false, false, false));
 }

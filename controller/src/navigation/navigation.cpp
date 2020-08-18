@@ -47,6 +47,7 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   ctr_opt.callback_group = _callback_group_nav_messages;
   _subNavMessages = this->create_subscription<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken, rclcpp::QoS(10),
                                                                          std::bind(&Navigation::callback, this, std::placeholders::_1), ctr_opt);
+  std::cout << "Navigation created!\n";
 }
 
 Navigation::~Navigation() {
@@ -76,6 +77,11 @@ void Navigation::callback(ctr_msgs::msg::Navigation::SharedPtr msg) {
   _destination.setY(msg->destination.y);
   _destination.setZ(msg->destination.z);
   _destination.setIsUnknown(false);
+
+  // Configure nav alg
+  _navAlg->avoidBall(msg->avoidball);
+  _navAlg->avoidEnemies(msg->avoidenemies);
+  _navAlg->avoidAllies(msg->avoidallies);
 }
 
 ctr_msgs::msg::Path Navigation::generatePathMessage(QLinkedList<Vector> path) const {
@@ -94,6 +100,7 @@ ctr_msgs::msg::Path Navigation::generatePathMessage(QLinkedList<Vector> path) co
 }
 
 void Navigation::run() {
+  std::cout << "Navigation is running!\n";
 //  timespec start, stop;
 //  clock_gettime(CLOCK_REALTIME, &start);
   // Wait for a valid destination

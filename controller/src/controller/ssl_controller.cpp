@@ -81,7 +81,7 @@ void SSL_Controller::holdBall(bool turnOn) {
   }
 }
 
-ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, float orientation) {
+ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   ctr_msgs::msg::Position desiredPos;
   desiredPos.isvalid = true;
   desiredPos.x = destination.x();
@@ -90,5 +90,8 @@ ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, f
   ctr_msgs::msg::Navigation ret;
   ret.destination = desiredPos;
   ret.orientation = orientation;
+  ret.avoidball = avoidBall;
+  ret.avoidallies = avoidAllies;
+  ret.avoidenemies = avoidEnemies;
   return ret;
 }

@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   rclcpp::executors::MultiThreadedExecutor executor;
   auto nav_node = std::make_shared<Navigation>(team, id);
   executor.add_node(nav_node);
+  std:: cout << "Number of threads: "<< executor.get_number_of_threads() << "\n";
   executor.spin();
   rclcpp::shutdown();
   return 0;
