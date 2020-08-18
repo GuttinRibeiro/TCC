@@ -745,7 +745,6 @@ void GLSoccerView::updateDetection(Element ballInfo, QHash<qint8, Element> blueT
     velocity.set(player.velocity().x(), player.velocity().y());
     robotsVelocities.append(velocity);
     if(player.path().size() > 0) {
-      std::cout << "[ok]\n";
       robotsPaths.append(player.path());
     }
   }

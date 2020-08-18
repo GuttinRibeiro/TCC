@@ -46,6 +46,9 @@ public:
     // TODO: como calcular a velocidade?
 
     QHash<qint8, Element> aux = _elements.value(group);
+    if(aux.contains(id)) {
+      elem.addPath(aux.value(id).path());
+    }
     aux.insert(id, elem);
     _elements.insert(group, aux);
     _mutex.unlock();

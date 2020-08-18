@@ -4,6 +4,8 @@
 #include "rclcpp_action/create_server.hpp"
 #include "rclcpp_action/server.hpp"
 
+#include <ctime>
+
 Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("navigation_"+team+"_"+std::to_string(id)), Entity(frequency) {
   _team = team;
   _id = (qint8)id;
@@ -78,7 +80,7 @@ void Navigation::callback(ctr_msgs::msg::Navigation::SharedPtr msg) {
 
 ctr_msgs::msg::Path Navigation::generatePathMessage(QLinkedList<Vector> path) const {
   ctr_msgs::msg::Path msg;
-  for(int i = 0; i < path.size(); i++) {
+  while(path.size() > 0) {
     ctr_msgs::msg::Position pos;
     Vector currentPos = path.takeFirst();
     pos.x = currentPos.x();
@@ -92,6 +94,8 @@ ctr_msgs::msg::Path Navigation::generatePathMessage(QLinkedList<Vector> path) co
 }
 
 void Navigation::run() {
+//  timespec start, stop;
+//  clock_gettime(CLOCK_REALTIME, &start);
   // Wait for a valid destination
   if(_destination.isUnknown()) {
     return;
@@ -104,4 +108,7 @@ void Navigation::run() {
   } else {
     std::cout << "[Navigation] Empty path received\n";
   }
+//  clock_gettime(CLOCK_REALTIME, &stop);
+//  auto elapsed = ((stop.tv_sec*1E9+stop.tv_nsec)-(start.tv_sec*1E9+start.tv_nsec))/1E6; // in ms
+//  std::cout << "[Navigation] Effective loop frequency: " << 1000/(elapsed) << " Hz\n";
 }
