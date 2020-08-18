@@ -5,10 +5,10 @@
 #define MAX_DISTANCE 5
 
 PF::PF(InfoBus *ib, qint8 id, int frequency) : Navigation_Algorithm (ib, id, frequency) {
-  _repulsionConstants.first = -0.1;
-  _repulsionConstants.second = 1.5;
-  _attractiveConstants.first = 5;
-  _attractiveConstants.second = 2;
+  _x_shift = -0.5;
+  _y_shift = 0.0;
+  _factor = 2.0;
+  _k = 0.15;
 }
 
 PF::~PF() {
@@ -27,12 +27,12 @@ QLinkedList<Vector> PF::calculatePath(Vector currentPosition, float currentOrien
 //    std::cout << "Current possition: " << currentPosition.x() << ", " << currentPosition.y() << "\n";
     for (int j = 0; j < obstacles.size(); j++) {
       if(Utils::distance(currentPosition, obstacles.at(j)) < MAX_DISTANCE) {
-        resultantForce = resultantForce + calculateForce(currentPosition, obstacles.at(j), true);
+        resultantForce = resultantForce + calculateForce(currentPosition, obstacles.at(j));
       }
     }
 
     // Calculate the attractive component
-    resultantForce = resultantForce + calculateForce(currentPosition, destination, false);
+    resultantForce = resultantForce + (destination-currentPosition);
 
     // Normalize the resultant force and calculate a new position using the current position and the resolution selected
     resultantForce = resultantForce/resultantForce.norm();
@@ -48,17 +48,12 @@ QLinkedList<Vector> PF::calculatePath(Vector currentPosition, float currentOrien
   return path;
 }
 
-Vector PF::calculateForce(Vector robot, Vector element, bool isRepulsive) {
+Vector PF::calculateForce(Vector robot, Vector element) {
   float distance = Utils::distance(robot, element);
   Vector ret = element - robot;
   float norm = ret.norm();
   ret = ret/norm;
-  if(isRepulsive) {
-    ret = ret * (_repulsionConstants.first/pow(distance, _repulsionConstants.second));
-  } else {
-    ret = ret * (_attractiveConstants.first/pow(distance, _attractiveConstants.second));
-  }
-
+  ret = ret * (_k/pow(distance-_y_shift, _factor) + _y_shift);
   return ret;
 }
 
