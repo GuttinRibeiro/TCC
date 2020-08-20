@@ -5,8 +5,11 @@
 #include "rclcpp_action/server.hpp"
 
 #include <ctime>
+#include <math.h>
+#include <chrono>
 
 Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("navigation_"+team+"_"+std::to_string(id)), Entity(frequency) {
+  _frequency = frequency;
   _team = team;
   _id = (qint8)id;
   std::string robotToken = team+"_"+std::to_string(id);
@@ -47,13 +50,29 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   ctr_opt.callback_group = _callback_group_nav_messages;
   _subNavMessages = this->create_subscription<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken, rclcpp::QoS(10),
                                                                          std::bind(&Navigation::callback, this, std::placeholders::_1), ctr_opt);
+
+  // Robot constraints
+  _maxLinearSpeed = 2.25;
+  _maxLinearAcceleration = 1.75;
+  _maxAngularSpeed = 220.0/180.0*M_PI;
+  _maxAngularAcceleration = 1.75/2.25*_maxAngularSpeed;
+  _callback_group_parameters = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  this->declare_parameter<float>("maxAngSpeed", _maxAngularSpeed);
+  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxAngSpeed, this), _callback_group_parameters);
+  this->declare_parameter<float>("maxLinSpeed", _maxLinearSpeed);
+  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxLinSpeed, this), _callback_group_parameters);
+  this->declare_parameter<float>("maxAngAcceleration", _maxAngularAcceleration);
+  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxAngAcceleration, this), _callback_group_parameters);
+  this->declare_parameter<float>("maxLinAcceleration", _maxLinearAcceleration);
+  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxLinAcceleration, this), _callback_group_parameters);
   this->start();
-  std::cout << "Navigation created!\n";
 }
 
 Navigation::~Navigation() {
   delete _ib;
   delete _navAlg;
+  delete _linCtrAlg;
+  delete  _angCtrAlg;
 }
 
 void Navigation::sendVelocity(float vx, float vy, float vang) {
@@ -70,6 +89,18 @@ void Navigation::configure() {
 
   // Allocate a nav alg
   _navAlg = new PF(_ib, _id);
+
+  // Allocate and configure control algorithms
+  _linCtrAlg = new Discrete_PID(this, "linear_ctr_alg");
+  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"kp", 3.0));
+  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"ki", 0.0));
+  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"kd", 0.5));
+  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"T0", 1.0/_frequency));
+  _angCtrAlg = new Discrete_PID(this, "angular_ctr_alg");
+  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"kp", 3.0));
+  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"ki", 0.0));
+  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"kd", 0.5));
+  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"T0", 1.0/_frequency));
 }
 
 void Navigation::callback(ctr_msgs::msg::Navigation::SharedPtr msg) {
@@ -101,7 +132,9 @@ ctr_msgs::msg::Path Navigation::generatePathMessage(QLinkedList<Vector> path) co
 }
 
 void Navigation::run() {
-  std::cout << "Navigation is running!\n";
+//  std::cout << "Navigation is running!\n";
+//  std::cout << "[Navigation] PID error: " << _linCtrAlg->iterate(10.0) << "\n";
+
 //  timespec start, stop;
 //  clock_gettime(CLOCK_REALTIME, &start);
   // Wait for a valid destination
@@ -119,4 +152,24 @@ void Navigation::run() {
 //  clock_gettime(CLOCK_REALTIME, &stop);
 //  auto elapsed = ((stop.tv_sec*1E9+stop.tv_nsec)-(start.tv_sec*1E9+start.tv_nsec))/1E6; // in ms
 //  std::cout << "[Navigation] Effective loop frequency: " << 1000/(elapsed) << " Hz\n";
+}
+
+void Navigation::getMaxAngSpeed() {
+  this->get_parameter("maxAngSpeed", _maxAngularSpeed);
+  std::cout << "[Navigation] New maxAngSpeed: " << _maxAngularSpeed << "\n";
+}
+
+void Navigation::getMaxLinSpeed() {
+  this->get_parameter("maxLinSpeed", _maxLinearSpeed);
+  std::cout << "[Navigation] New maxLinSpeed: " << _maxLinearSpeed << "\n";
+}
+
+void Navigation::getMaxAngAcceleration() {
+  this->get_parameter("maxAngAcceleration", _maxAngularAcceleration);
+  std::cout << "[Navigation] New maxAngAcceleration: " << _maxAngularAcceleration<< "\n";
+}
+
+void Navigation::getMaxLinAcceleration() {
+  this->get_parameter("maxLinAcceleration", _maxLinearAcceleration);
+  std::cout << "[Navigation] New maxLinAcceleration: " << _maxAngularAcceleration << "\n";
 }
