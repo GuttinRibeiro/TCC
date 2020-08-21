@@ -38,27 +38,26 @@ private:
   Control_Algorithm *_linCtrAlg;
   Control_Algorithm *_angCtrAlg;
   int _frequency;
-  float _maxLinearSpeed;
-  float _maxLinearAcceleration;
-  float _maxAngularSpeed;
-  float _maxAngularAcceleration;
+  double _maxLinearSpeed;
+  double _maxLinearAcceleration;
+  double _maxAngularSpeed;
+  double _maxAngularAcceleration;
+  qint8 _id;
+  std::string _team;
+  OnSetParametersCallbackHandle::SharedPtr _handler;
+  QMap<std::string, double *> _paramAddressTable;
 
   std::string name() {return "Navigation";}
   void configure();
   void run();
   void callback(ctr_msgs::msg::Navigation::SharedPtr msg);
   ctr_msgs::msg::Path generatePathMessage(QLinkedList<Vector> path) const;
-  void getMaxLinSpeed();
-  void getMaxAngSpeed();
-  void getMaxLinAcceleration();
-  void getMaxAngAcceleration();
-protected:
-  qint8 _id;
-  std::string _team;
-
+  rcl_interfaces::msg::SetParametersResult paramCallback(const std::vector<rclcpp::Parameter> & parameters);
   void sendVelocity(float vx, float vy, float vang);
 public:
   Navigation(std::string team, int id, int frequency = 60);
+  bool addDoubleParam(std::string paramName, double *paramAddress, double defaultValue);
+  bool addDoubleParam(QMap<std::string, std::pair<double *, double>> paramTable);
   ~Navigation();
 };
 

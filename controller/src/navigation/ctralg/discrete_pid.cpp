@@ -1,66 +1,36 @@
 #include "discrete_pid.hpp"
+//#include <iostream>
 
-Discrete_PID::Discrete_PID(rclcpp::Node *owner, std::string name) : Control_Algorithm (owner, name) {
+Discrete_PID::Discrete_PID(std::string name, int frequency) : Control_Algorithm (name) {
   _kp = 0.0;
   _kd = 0.0;
   _ki = 0.0;
-  _T0 = 1/60;
+  _T0 = 1.0/frequency;
   _lastError = 0.0;
   _lastlastError = 0.0;
   _lastOutput = 0.0;
-  _mutex.unlock();
-  declareFloatParameter("kp", _kp, std::bind(&Discrete_PID::getExternalKp, this));
-  declareFloatParameter("kd", _kd, std::bind(&Discrete_PID::getExternalKd, this));
-  declareFloatParameter("ki", _ki, std::bind(&Discrete_PID::getExternalKi, this));
-  declareFloatParameter("T0", _T0, std::bind(&Discrete_PID::getExternalT0, this));
+  declareDoubleParameter(name+"/kp", &_kp, _kp);
+  declareDoubleParameter(name+"/ki", &_ki, _ki);
+  declareDoubleParameter(name+"/kd", &_kd, _kd);
+  declareDoubleParameter(name+"/T0", &_T0, _T0);
 }
 
 Discrete_PID::~Discrete_PID() {
 
 }
 
-float Discrete_PID::iterate(float error) {
+double Discrete_PID::iterate(double error) {
   // u(k) = u(k-1) + q0*e(k) + q1*e(k-1) + q2*e(k-2)
-  _mutex.lock();
+  convertKtoQ();
   _lastOutput = _lastOutput + _q0*error + _q1*_lastError + _q2*_lastlastError;
-  _mutex.unlock();
   _lastlastError = _lastError;
-  _lastError = error;
+  _lastError = _lastOutput;
   return _lastOutput;
-}
-
-void Discrete_PID::getExternalKp() {
-  _mutex.lock();
-  getFloatParameter("kp", &_kp);
-  convertKtoQ();
-  _mutex.unlock();
-}
-
-void Discrete_PID::getExternalKd() {
-  std::cout << "Function called\n";
-  _mutex.lock();
-  getFloatParameter("kd", &_kd);
-  std::cout << "[PID] New kd " << _kd << "\n";
-  convertKtoQ();
-  _mutex.unlock();
-}
-
-void Discrete_PID::getExternalKi() {
-  _mutex.lock();
-  getFloatParameter("ki", &_ki);
-  convertKtoQ();
-  _mutex.unlock();
-}
-
-void Discrete_PID::getExternalT0() {
-  _mutex.lock();
-  getFloatParameter("T0", &_T0);
-  convertKtoQ();
-  _mutex.unlock();
 }
 
 void Discrete_PID::convertKtoQ() {
   _q0 = _kp+_kd/_T0+_ki*_T0;
   _q1 = -_kp - 2*(_kd/_T0);
   _q2 = _kd/_T0;
+//  std::cout << "Discrete PID: \n q0: " << _q0 << "\n q1: " << _q1 <<"\n q2: " << _q2 << "\n T0: " << _T0 << "\n";
 }

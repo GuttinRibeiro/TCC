@@ -1,26 +1,28 @@
 #ifndef CONTROL_ALGORITHM_HPP
 #define CONTROL_ALGORITHM_HPP
 
-#include "rclcpp/rclcpp.hpp"
 #include <string>
 #include <functional>
+#include <QMap>
+#include <QMutex>
+#include <utility>
 
 class Control_Algorithm {
 private:
-  rclcpp::Node *_node;
-  rclcpp::CallbackGroup::SharedPtr _callback_group;
+  QMap<std::string, std::pair<double *, double>> _paramTable;
+  QMutex _mutex;
 
 protected:
   std::string _name;
 
 public:
-  Control_Algorithm(rclcpp::Node *owner, std::string name);
+  Control_Algorithm(std::string name);
   virtual ~Control_Algorithm();
-  virtual float iterate(float error) = 0;
+  virtual double iterate(double error) = 0;
   std::string name() const {return _name;}
 
-  void declareFloatParameter(std::string variableName, float defaultValue, std::function<void(void)> callback, int frequency = 30);
-  bool getFloatParameter(std::string variableName, float *parameter);
+  bool declareDoubleParameter(std::string variableName, double *paramAddress, double defaultValue = 0);
+  QMap<std::string, std::pair<double *, double>> getParamTable();
 };
 
 #endif // CONTROL_ALGORITHM_HPP

@@ -6,7 +6,6 @@
 
 #include <ctime>
 #include <math.h>
-#include <chrono>
 
 Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("navigation_"+team+"_"+std::to_string(id)), Entity(frequency) {
   _frequency = frequency;
@@ -57,18 +56,11 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   _maxAngularSpeed = 220.0/180.0*M_PI;
   _maxAngularAcceleration = 1.75/2.25*_maxAngularSpeed;
   _callback_group_parameters = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-  this->declare_parameter<float>("maxAngSpeed", _maxAngularSpeed);
-  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxAngSpeed, this), _callback_group_parameters);
-  this->declare_parameter<float>("maxLinSpeed", _maxLinearSpeed);
-  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxLinSpeed, this), _callback_group_parameters);
-  this->declare_parameter<float>("maxAngAcceleration", _maxAngularAcceleration);
-  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxAngAcceleration, this), _callback_group_parameters);
-  this->declare_parameter<float>("maxLinAcceleration", _maxLinearAcceleration);
-  this->create_wall_timer(std::chrono::milliseconds(1000/frequency), std::bind(&Navigation::getMaxLinAcceleration, this), _callback_group_parameters);
   this->start();
 }
 
 Navigation::~Navigation() {
+  this->remove_on_set_parameters_callback(_handler.get());
   delete _ib;
   delete _navAlg;
   delete _linCtrAlg;
@@ -91,16 +83,17 @@ void Navigation::configure() {
   _navAlg = new PF(_ib, _id);
 
   // Allocate and configure control algorithms
-  _linCtrAlg = new Discrete_PID(this, "linear_ctr_alg");
-  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"kp", 3.0));
-  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"ki", 0.0));
-  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"kd", 0.5));
-  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/"+"T0", 1.0/_frequency));
-  _angCtrAlg = new Discrete_PID(this, "angular_ctr_alg");
-  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"kp", 3.0));
-  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"ki", 0.0));
-  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"kd", 0.5));
-  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/"+"T0", 1.0/_frequency));
+  _linCtrAlg = new Discrete_PID("linear_ctr_alg", _frequency);
+  _angCtrAlg = new Discrete_PID("angular_ctr_alg", _frequency);
+
+  // Declare all parameters
+  addDoubleParam("maxAngSpeed", &_maxAngularSpeed, _maxAngularSpeed);
+  addDoubleParam("maxLinSpeed", &_maxLinearSpeed, _maxLinearSpeed);
+  addDoubleParam("maxAngAcceleration", &_maxAngularAcceleration, _maxAngularAcceleration);
+  addDoubleParam("maxLinAcceleration", &_maxLinearAcceleration, _maxLinearAcceleration);
+  addDoubleParam(_linCtrAlg->getParamTable());
+  addDoubleParam(_angCtrAlg->getParamTable());
+  _handler = this->add_on_set_parameters_callback(std::bind(&Navigation::paramCallback, this, std::placeholders::_1));
 }
 
 void Navigation::callback(ctr_msgs::msg::Navigation::SharedPtr msg) {
@@ -132,11 +125,10 @@ ctr_msgs::msg::Path Navigation::generatePathMessage(QLinkedList<Vector> path) co
 }
 
 void Navigation::run() {
-//  std::cout << "Navigation is running!\n";
-//  std::cout << "[Navigation] PID error: " << _linCtrAlg->iterate(10.0) << "\n";
-
 //  timespec start, stop;
 //  clock_gettime(CLOCK_REALTIME, &start);
+//  std::cout << "Max lin speed: " << _maxLinearSpeed << "\n";
+
   // Wait for a valid destination
   if(_destination.isUnknown()) {
     return;
@@ -154,22 +146,46 @@ void Navigation::run() {
 //  std::cout << "[Navigation] Effective loop frequency: " << 1000/(elapsed) << " Hz\n";
 }
 
-void Navigation::getMaxAngSpeed() {
-  this->get_parameter("maxAngSpeed", _maxAngularSpeed);
-  std::cout << "[Navigation] New maxAngSpeed: " << _maxAngularSpeed << "\n";
+rcl_interfaces::msg::SetParametersResult Navigation::paramCallback(const std::vector<rclcpp::Parameter> &parameters) {
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  for(const auto & parameter: parameters) {
+    if(parameter.get_type() == rclcpp::PARAMETER_DOUBLE) {
+      double *address = _paramAddressTable.value(parameter.get_name());
+      if(address == nullptr) {
+        result.successful = false;
+        result.reason = "'" + parameter.get_name() + "' not defined before";
+      } else {
+        *address = parameter.as_double();
+        std::cout << "[Navigation] Parameter " + parameter.get_name() + " updated\n";
+      }
+    } else {
+      result.successful = false;
+      result.reason = "'" + parameter.get_name() + "' must be a double";
+    }
+  }
+  return result;
 }
 
-void Navigation::getMaxLinSpeed() {
-  this->get_parameter("maxLinSpeed", _maxLinearSpeed);
-  std::cout << "[Navigation] New maxLinSpeed: " << _maxLinearSpeed << "\n";
+bool Navigation::addDoubleParam(std::string paramName, double *paramAddress, double defaultValue) {
+  if(paramAddress == nullptr) {
+    return false;
+  }
+
+  this->declare_parameter<double>(paramName, defaultValue);
+  _paramAddressTable.insert(paramName, paramAddress);
+  return true;
 }
 
-void Navigation::getMaxAngAcceleration() {
-  this->get_parameter("maxAngAcceleration", _maxAngularAcceleration);
-  std::cout << "[Navigation] New maxAngAcceleration: " << _maxAngularAcceleration<< "\n";
-}
+bool Navigation::addDoubleParam(QMap<std::string, std::pair<double *, double> > paramTable) {
+  QList<std::string> keys = paramTable.keys();
+  if(keys.size() < 1) {
+    return false;
+  }
 
-void Navigation::getMaxLinAcceleration() {
-  this->get_parameter("maxLinAcceleration", _maxLinearAcceleration);
-  std::cout << "[Navigation] New maxLinAcceleration: " << _maxAngularAcceleration << "\n";
+  for(const auto & key : keys) {
+    this->declare_parameter<double>(key, paramTable.value(key).second);
+    _paramAddressTable.insert(key, paramTable.value(key).first);
+  }
+  return true;
 }

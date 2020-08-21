@@ -2,31 +2,28 @@
 #include <iostream>
 #include <chrono>
 
-using namespace std::chrono_literals;
-
-Control_Algorithm::Control_Algorithm(rclcpp::Node *owner, std::string name) {
-  if(owner == nullptr)  {
-    std::cout << "[Control algorithm] Invalid node pointer received\n";
-    return;
-  }
-
-  _node = owner;
-  _callback_group = _node->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+Control_Algorithm::Control_Algorithm(std::string name) {
   _name = name;
+  _mutex.unlock();
 }
 
 Control_Algorithm::~Control_Algorithm() {
-
+  _paramTable.clear();
 }
 
-void Control_Algorithm::declareFloatParameter(std::string variableName, float defaultValue, std::function<void(void)> callback, int frequency) {
-  _node->declare_parameter<float>(name()+"/"+variableName, defaultValue);
-//  _node->create_wall_timer(std::chrono::milliseconds(1000/frequency), callback, _callback_group);
-  _node->create_wall_timer(12ms, callback, _callback_group);
-
-  std::cout << "Parameter declared\n";
+bool Control_Algorithm::declareDoubleParameter(std::string variableName, double *paramAddress, double defaultValue) {
+  if(paramAddress == nullptr) {
+    return false;
+  }
+  _mutex.lock();
+  _paramTable.insert(variableName, std::make_pair(paramAddress, defaultValue));
+  _mutex.unlock();
+  return true;
 }
 
-bool Control_Algorithm::getFloatParameter(std::string variableName, float *parameter) {
-  return _node->get_parameter(variableName, *parameter);
+QMap<std::string, std::pair<double *, double> > Control_Algorithm::getParamTable() {
+  _mutex.lock();
+  QMap<std::string, std::pair<double *, double>> ret = _paramTable;
+  _mutex.unlock();
+  return ret;
 }
