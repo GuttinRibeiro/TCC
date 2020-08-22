@@ -5,7 +5,7 @@
 
 class Utils {
     public:
-        static float distance(Vector p1, Vector p2);
+        static double distance(Vector p1, Vector p2);
         static bool isWithinInterval(float min, float max, float value);
         static float getAngle(Vector pos);
         static float getAngle(Vector p1, Vector p2);

@@ -22,7 +22,6 @@ private:
   rclcpp::CallbackGroup::SharedPtr _callback_group_server;
   rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
   rclcpp::CallbackGroup::SharedPtr _callback_group_nav_messages;
-  rclcpp::CallbackGroup::SharedPtr _callback_group_parameters;
 
   rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr _clientElementRequest;
   rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr _clientInfoRequest;
@@ -42,10 +41,13 @@ private:
   double _maxLinearAcceleration;
   double _maxAngularSpeed;
   double _maxAngularAcceleration;
+  double _lastLinSpeed;
+  double _lastAngSpeed;
   qint8 _id;
   std::string _team;
   OnSetParametersCallbackHandle::SharedPtr _handler;
   QMap<std::string, double *> _paramAddressTable;
+  QMutex _mutex;
 
   std::string name() {return "Navigation";}
   void configure();
@@ -54,6 +56,9 @@ private:
   ctr_msgs::msg::Path generatePathMessage(QLinkedList<Vector> path) const;
   rcl_interfaces::msg::SetParametersResult paramCallback(const std::vector<rclcpp::Parameter> & parameters);
   void sendVelocity(float vx, float vy, float vang);
+  double calculateCurveLength(QLinkedList<Vector> path) const;
+  double calculateConstrainedSpeed(double speed, double lastSpeed, double minValue, double maxValue,
+                                   double maxAcceleration, double elapsedTime);
 public:
   Navigation(std::string team, int id, int frequency = 60);
   bool addDoubleParam(std::string paramName, double *paramAddress, double defaultValue);

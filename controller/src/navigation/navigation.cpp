@@ -55,7 +55,9 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   _maxLinearAcceleration = 1.75;
   _maxAngularSpeed = 220.0/180.0*M_PI;
   _maxAngularAcceleration = 1.75/2.25*_maxAngularSpeed;
-  _callback_group_parameters = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  _lastLinSpeed = 0.0;
+  _lastAngSpeed = 0.0;
+  _mutex.unlock();
   this->start();
 }
 
@@ -125,14 +127,14 @@ ctr_msgs::msg::Path Navigation::generatePathMessage(QLinkedList<Vector> path) co
 }
 
 void Navigation::run() {
-//  timespec start, stop;
-//  clock_gettime(CLOCK_REALTIME, &start);
-//  std::cout << "Max lin speed: " << _maxLinearSpeed << "\n";
-
   // Wait for a valid destination
   if(_destination.isUnknown()) {
     return;
   }
+
+  _mutex.lock();
+  timespec start, stop;
+  clock_gettime(CLOCK_REALTIME, &start);
   _navAlg->setDestination(_destination);
   _navAlg->setOrientation(_orientation);
   QLinkedList<Vector> path = _navAlg->path();
@@ -140,10 +142,29 @@ void Navigation::run() {
     _pubPath->publish(generatePathMessage(path));
   } else {
     std::cout << "[Navigation] Empty path received\n";
+    _mutex.unlock();
+    return;
   }
-//  clock_gettime(CLOCK_REALTIME, &stop);
-//  auto elapsed = ((stop.tv_sec*1E9+stop.tv_nsec)-(start.tv_sec*1E9+start.tv_nsec))/1E6; // in ms
-//  std::cout << "[Navigation] Effective loop frequency: " << 1000/(elapsed) << " Hz\n";
+  Vector currPos = path.takeFirst();
+  Vector nextMovement = path.takeFirst() - currPos;
+  nextMovement = nextMovement/nextMovement.norm();
+  double linearError = calculateCurveLength(path);
+  double desiredSpeed = _linCtrAlg->iterate(linearError);
+  double desiredAngSpeed = _angCtrAlg->iterate(_orientation-_ib->myOrientation());
+  clock_gettime(CLOCK_REALTIME, &stop);
+  auto elapsed = ((stop.tv_sec*1E9+stop.tv_nsec)-(start.tv_sec*1E9+start.tv_nsec))/1E3; // in s
+  _mutex.unlock();
+  // Apply constraints to get a feasible desired speed:
+  // Linear speed:
+  desiredSpeed = calculateConstrainedSpeed(desiredSpeed, _lastLinSpeed, 0.0, _maxLinearSpeed, _maxLinearAcceleration, elapsed);
+
+  // Angular speed:
+  desiredAngSpeed = calculateConstrainedSpeed(desiredAngSpeed, _lastAngSpeed, 0.0, _maxAngularSpeed, _maxAngularAcceleration, elapsed);
+
+  // Send command:
+  sendVelocity(nextMovement.x()*desiredSpeed, nextMovement.y()*desiredSpeed, desiredAngSpeed);
+  _lastLinSpeed = desiredSpeed;
+  _lastAngSpeed = desiredAngSpeed;
 }
 
 rcl_interfaces::msg::SetParametersResult Navigation::paramCallback(const std::vector<rclcpp::Parameter> &parameters) {
@@ -156,7 +177,9 @@ rcl_interfaces::msg::SetParametersResult Navigation::paramCallback(const std::ve
         result.successful = false;
         result.reason = "'" + parameter.get_name() + "' not defined before";
       } else {
+        _mutex.lock();
         *address = parameter.as_double();
+        _mutex.unlock();
         std::cout << "[Navigation] Parameter " + parameter.get_name() + " updated\n";
       }
     } else {
@@ -188,4 +211,43 @@ bool Navigation::addDoubleParam(QMap<std::string, std::pair<double *, double> > 
     _paramAddressTable.insert(key, paramTable.value(key).first);
   }
   return true;
+}
+
+double Navigation::calculateCurveLength(QLinkedList<Vector> path) const {
+  if(path.size() < 2) {
+    return 0.0;
+  }
+
+  int size = path.size();
+  double ret = 0.0;
+  Vector currentPos = path.takeFirst();
+  Vector nextPos = path.takeFirst();
+  for(int i = 0; i < size-2; i++) {
+    ret += Utils::distance(currentPos, nextPos);
+    currentPos = nextPos;
+    nextPos = path.takeFirst();
+  }
+
+  return ret;
+}
+
+double Navigation::calculateConstrainedSpeed(double speed, double lastSpeed, double minValue, double maxValue,
+                                             double maxAcceleration, double elapsedTime) {
+  // Limit speed value
+  if(speed < minValue) {
+    speed = minValue;
+  } else if(speed > maxValue) {
+    speed = maxValue;
+  }
+
+  // Apply acceleration constraints
+  if(fabs(lastSpeed - speed)/elapsedTime > maxAcceleration) {
+    if(lastSpeed - speed > 0) {
+      speed = lastSpeed - maxAcceleration*elapsedTime;
+    } else {
+      speed = lastSpeed + maxAcceleration*elapsedTime;
+    }
+  }
+
+  return speed;
 }

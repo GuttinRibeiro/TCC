@@ -21,6 +21,6 @@ Actuator_Sub::Actuator_Sub(std::string team, int id, std::string nodeName, int n
     rclcpp::Subscription<ctr_msgs::msg::Velocity>::SharedPtr velocity_element;
     auto opt_2 = rclcpp::SubscriptionOptions();
     opt_2.callback_group = _callback_group;
-    _subsTable2 = this->create_subscription<ctr_msgs::msg::Command>("actuator/velocity/"+_team+"_"+std::to_string(_id),
+    _subsTable2 = this->create_subscription<ctr_msgs::msg::Velocity>("actuator/velocity/"+_team+"_"+std::to_string(_id),
                                                                 10, std::bind(&Actuator_Sub::send_velocity, this, _1), opt_2);
 }

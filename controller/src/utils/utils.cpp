@@ -1,7 +1,7 @@
 #include "utils.hpp"
 #include <cmath>
 
-float Utils::distance(Vector p1, Vector p2) {
+double Utils::distance(Vector p1, Vector p2) {
     return sqrt((pow(p1.y()-p2.y(), 2))+(pow(p1.x()-p2.x(), 2)));
 }
 
