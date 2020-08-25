@@ -29,8 +29,7 @@ double Discrete_PID::iterate(double error) {
 }
 
 void Discrete_PID::convertKtoQ() {
-  _q0 = _kp+_kd/_T0+_ki*_T0;
-  _q1 = -_kp - 2*(_kd/_T0);
+  _q0 = _kp+_kd/_T0;
+  _q1 = -_kp - 2*(_kd/_T0) + _ki*_T0;
   _q2 = _kd/_T0;
-//  std::cout << "Discrete PID: \n q0: " << _q0 << "\n q1: " << _q1 <<"\n q2: " << _q2 << "\n T0: " << _T0 << "\n";
 }
