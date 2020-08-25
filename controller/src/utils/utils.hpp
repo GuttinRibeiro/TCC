@@ -14,6 +14,7 @@ class Utils {
         static float distanceToLine(Vector p1, Vector p2, Vector point);
         static float wrapToTwoPi(float angle);
         static float angleDiff(float a, float b);
+        static Vector rotateVectorAroundZ(Vector v, float angle);
 };
 
 #endif

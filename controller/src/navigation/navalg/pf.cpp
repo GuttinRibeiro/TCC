@@ -24,7 +24,6 @@ QLinkedList<Vector> PF::calculatePath(Vector currentPosition, float currentOrien
   while(path.contains(destination) == false) {
     // Sum all repulsive components
     Vector resultantForce(0.0, 0.0, 0.0, false);
-//    std::cout << "Current possition: " << currentPosition.x() << ", " << currentPosition.y() << "\n";
     for (int j = 0; j < obstacles.size(); j++) {
       if(Utils::distance(currentPosition, obstacles.at(j)) < MAX_DISTANCE) {
         resultantForce = resultantForce + calculateForce(currentPosition, obstacles.at(j));

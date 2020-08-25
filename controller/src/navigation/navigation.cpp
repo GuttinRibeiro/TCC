@@ -51,10 +51,14 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
                                                                          std::bind(&Navigation::callback, this, std::placeholders::_1), ctr_opt);
 
   // Robot constraints
-  _maxLinearSpeed = 2.25;
-  _maxLinearAcceleration = 1.75;
-  _maxAngularSpeed = 220.0/180.0*M_PI;
-  _maxAngularAcceleration = 1.75/2.25*_maxAngularSpeed;
+//  _maxLinearSpeed = 2.25;
+//  _maxLinearAcceleration = 1.75;
+//  _maxAngularSpeed = 220.0/180.0*M_PI;
+//  _maxAngularAcceleration = 1.75/2.25*_maxAngularSpeed;
+  _maxLinearSpeed = 0.1;
+  _maxLinearAcceleration = 0.01;
+  _maxAngularSpeed = 0.2;
+  _maxAngularAcceleration = 0.8*_maxAngularSpeed;
   _lastLinSpeed = 0.0;
   _lastAngSpeed = 0.0;
   _mutex.unlock();
@@ -148,9 +152,11 @@ void Navigation::run() {
   Vector currPos = path.takeFirst();
   Vector nextMovement = path.takeFirst() - currPos;
   nextMovement = nextMovement/nextMovement.norm();
+  float myOrientation = _ib->myOrientation();
+  nextMovement = Utils::rotateVectorAroundZ(nextMovement, M_PI_2-myOrientation);
   double linearError = calculateCurveLength(path);
   double desiredSpeed = _linCtrAlg->iterate(linearError);
-  double desiredAngSpeed = _angCtrAlg->iterate(_orientation-_ib->myOrientation());
+  double desiredAngSpeed = _angCtrAlg->iterate(_orientation-myOrientation);
   clock_gettime(CLOCK_REALTIME, &stop);
   auto elapsed = ((stop.tv_sec*1E9+stop.tv_nsec)-(start.tv_sec*1E9+start.tv_nsec))/1E3; // in s
   _mutex.unlock();

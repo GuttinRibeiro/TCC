@@ -55,3 +55,7 @@ float Utils::angleDiff(float a, float b) {
 
     return diff;
 }
+
+Vector Utils::rotateVectorAroundZ(Vector v, float angle) {
+  return Vector(v.x()*cos(angle)-v.y()*sin(angle), v.x()*sin(angle)+v.y()*cos(angle), v.z(), false);
+}
