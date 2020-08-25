@@ -171,7 +171,7 @@ void Navigation_Algorithm::avoidEnemies(bool turnOn) {
 
   if(turnOn) {
     // Get all visible players of their team
-    QList<qint8> ids = _ib->ourPlayers();
+    QList<qint8> ids = _ib->theirPlayers();
     _mutex.lock();
     for(quint8 i = 0; i < ids.size(); i++) {
       _obstacles.insert(std::make_pair(_theirGroup, ids.at(i)), _ib->robotPosition(_theirGroup, ids.at(i)));
@@ -188,13 +188,16 @@ void Navigation_Algorithm::run() {
   _mutex.lock();
   // Check if a new path should be calculated
   if(_newDesiredState) {
+//    std::cout << "[Navigation] New final state received. Recalculating path...\n";
     _path = calculatePath(_myPosition, _myOrientation, _path, _obstacles.values(), _destination, _orientation);
+//    std::cout << "[Navigation] New path calculated\n";
     _newDesiredState = false;
   } else {
     // Update path tracking
     _path  = updatePathTracking(_myPosition, _path);
 
     if(checkCurrentPath(_myPosition, _myOrientation, _path, _obstacles.values())) {
+//      std::cout << "[Navigation] Calculating new path\n";
       _path = calculatePath(_myPosition, _myOrientation, _path, _obstacles.values(), _destination, _orientation);
     }
   }
