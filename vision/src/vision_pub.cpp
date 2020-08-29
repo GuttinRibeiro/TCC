@@ -79,7 +79,7 @@ void VisionNode::split_packages() {
         rob_msg.x = selected.position().x();
         rob_msg.y = selected.position().y();
         rob_msg.id = selected.id();
-        rob_msg.orientation = selected.orientation();
+        rob_msg.orientation = Utils::wrapToTwoPi(selected.orientation());
         rob_msg.team = "blue";
         message.robots.push_back(rob_msg);
 
@@ -162,7 +162,7 @@ void VisionNode::split_packages() {
         rob_msg.x = selected.position().x();
         rob_msg.y = selected.position().y();
         rob_msg.id = selected.id();
-        rob_msg.orientation = selected.orientation();
+        rob_msg.orientation = Utils::wrapToTwoPi(selected.orientation());
         rob_msg.team = "yellow";
         message.robots.push_back(rob_msg);
 
