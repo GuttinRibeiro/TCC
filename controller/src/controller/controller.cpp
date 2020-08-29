@@ -80,7 +80,10 @@ void Controller::goTo(Vector destination, bool avoidBall, bool avoidAllies, bool
   _pubNavigation->publish(encodeNavMessage(destination, orientation, avoidBall, avoidAllies, avoidEnemies));
 }
 
-void Controller::lookTo(float orientation) {
+void Controller::lookTo(Vector posToLook) {
+  Vector myPos = _ib->myPosition();
+  Vector direction = posToLook-myPos;
+  float orientation = Utils::getAngle(direction);
   orientation = Utils::wrapToTwoPi(orientation);
-  _pubNavigation->publish(encodeNavMessage(infoBus()->myPosition(), orientation, false, false, false));
+  _pubNavigation->publish(encodeNavMessage(myPos, orientation, false, false, false));
 }

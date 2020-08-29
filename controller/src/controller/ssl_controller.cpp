@@ -32,8 +32,8 @@ void SSL_Controller::configure() {
 void SSL_Controller::run() {
   std::cout << "SSL Controller running!\n";
   kick(1.0f);
-  Vector pos = infoBus()->theirGoal();
-  goTo(pos);
+  Vector pos = infoBus()->ourGoal();
+  lookTo(pos);
 //  timespec start, stop;
 //  clock_gettime(CLOCK_REALTIME, &start);
 //  Vector mypos = infoBus()->myPosition();

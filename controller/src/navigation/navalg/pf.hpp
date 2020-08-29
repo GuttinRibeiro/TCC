@@ -20,6 +20,7 @@ private:
                                     Vector destination, float orientation);
   std::string name() {return "Potential Fields";}
   Vector calculateForce(Vector robot, Vector element);
+  bool isOnCollisionRoute(Vector currentPosition, Vector destination, Vector resultantForce, Vector obstacle, float radius);
 public:
   PF(InfoBus *ib, qint8 id, int frequency = 60);
   ~PF();

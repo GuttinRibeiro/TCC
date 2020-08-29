@@ -74,6 +74,17 @@ Navigation::~Navigation() {
 }
 
 void Navigation::sendVelocity(float vx, float vy, float vang) {
+  if(isnan(vx)) {
+    vx = 0.0f;
+  }
+
+  if(isnan(vy)) {
+    vy = 0.0f;
+  }
+
+  if(isnan(vang)) {
+    vang = 0.0f;
+  }
   auto message = ctr_msgs::msg::Velocity();
   message.vx = vx;
   message.vy = vy;
@@ -165,7 +176,7 @@ void Navigation::run() {
   desiredSpeed = calculateConstrainedSpeed(desiredSpeed, _lastLinSpeed, 0.0, _maxLinearSpeed, _maxLinearAcceleration, elapsed);
 
   // Angular speed:
-  desiredAngSpeed = calculateConstrainedSpeed(desiredAngSpeed, _lastAngSpeed, 0.0, _maxAngularSpeed, _maxAngularAcceleration, elapsed);
+  desiredAngSpeed = calculateConstrainedSpeed(desiredAngSpeed, _lastAngSpeed, -_maxAngularSpeed, _maxAngularSpeed, _maxAngularAcceleration, elapsed);
 
   // Send command:
   sendVelocity(nextMovement.x()*desiredSpeed, nextMovement.y()*desiredSpeed, desiredAngSpeed);

@@ -30,11 +30,14 @@ protected:
   virtual void configure() {return;}
   virtual std::string name() {return "Navigation algorithm";}
   void removeRobotsFromObstacles(int group);
+
   virtual QLinkedList<Vector> updatePathTracking(Vector currentPosition, QLinkedList<Vector> currentPath) = 0;
-  virtual bool checkCurrentPath(Vector currentPosition, float currentOrientation, QLinkedList<Vector> path, QList<Vector> obstacles) = 0;
+  virtual bool checkCurrentPath(Vector currentPosition, float currentOrientation, QLinkedList<Vector> path,
+                                QList<Vector> obstacles) = 0;
   virtual QLinkedList<Vector> calculatePath(Vector currentPosition, float currentOrientation,
                                             QLinkedList<Vector> oldPath, QList<Vector> obstacles,
                                             Vector destination, float orientation) = 0;
+
 public:
   Navigation_Algorithm(InfoBus *ib, qint8 id, int frequency = 60);
   virtual ~Navigation_Algorithm();
