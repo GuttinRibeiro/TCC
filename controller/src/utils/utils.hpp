@@ -15,6 +15,7 @@ class Utils {
         static float wrapToTwoPi(float angle);
         static float angleDiff(float a, float b);
         static Vector rotateVectorAroundZ(Vector v, float angle);
+        static Vector threePoints(const Vector &near, const Vector &far, float distance, float beta);
 };
 
 #endif

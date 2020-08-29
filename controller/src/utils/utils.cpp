@@ -59,3 +59,10 @@ float Utils::angleDiff(float a, float b) {
 Vector Utils::rotateVectorAroundZ(Vector v, float angle) {
   return Vector(v.x()*cos(angle)-v.y()*sin(angle), v.x()*sin(angle)+v.y()*cos(angle), v.z(), false);
 }
+
+Vector Utils::threePoints(const Vector &near, const Vector &far, float distance, float beta) {
+  double alpha = atan2(far.y()-near.y(), far.x()-near.x());
+  double gama = alpha+beta;
+  Vector p(near.x()+distance*cos(gama), near.y()+distance*sin(gama), 0.0, false);
+  return p;
+}
