@@ -41,7 +41,7 @@ void Grsim_Actuator_Sub::send_velocity(ctr_msgs::msg::Velocity::SharedPtr msg) {
   command->set_spinner(_cmd_buffer.spinner);
 
   // Velocity information
-  command->set_velnormal(msg->vx);
+  command->set_velnormal(-msg->vx);
   command->set_veltangent(msg->vy);
   command->set_velangular(msg->vang);
 
