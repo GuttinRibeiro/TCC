@@ -43,7 +43,7 @@ class Controller : public rclcpp::Node, public Entity {
     virtual void configure() {return;}
     virtual std::string name() {return "Controller";}
     virtual ctr_msgs::msg::Navigation encodeNavMessage(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) = 0;
-    void goToLookTo(Vector destination, float orientation, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
+    void goToLookTo(Vector destination, Vector posToLook, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
     void goTo(Vector destination, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
     void lookTo(Vector posToLook);
     void send_command(const ctr_msgs::msg::Command &msg);

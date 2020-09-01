@@ -1,5 +1,4 @@
 #include "discrete_pid.hpp"
-//#include <iostream>
 
 Discrete_PID::Discrete_PID(std::string name, int frequency) : Control_Algorithm (name) {
   _kp = 0.0;
@@ -24,7 +23,7 @@ double Discrete_PID::iterate(double error) {
   convertKtoQ();
   _lastOutput = _lastOutput + _q0*error + _q1*_lastError + _q2*_lastlastError;
   _lastlastError = _lastError;
-  _lastError = _lastOutput;
+  _lastError = error;
   return _lastOutput;
 }
 
