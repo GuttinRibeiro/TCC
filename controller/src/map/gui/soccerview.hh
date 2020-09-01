@@ -94,7 +94,7 @@ private:
 	QVector<SoccerViewRobot> robots;
 	QVector<vector2d> robotsVelocities;
 	QVector<std::pair<int, vector2d> > robotsNextPositions;
-//    QVector<QLinkedList<Position> > robotsPaths;
+  QVector<QLinkedList<Vector> > robotsPaths;
 	vector2d ball;
 	vector2d ballVelocity;
 	QMutex graphicsMutex;
@@ -125,7 +125,7 @@ private:
 	void drawFieldLines(FieldDimensions &dimensions);
 	void drawRobots();
 	void drawRobotsVelocities();
-//    void drawRobotTrajetory(const QLinkedList<Position> &path);
+  void drawRobotTrajetory(const QLinkedList<Vector> &path);
 	void drawRobotsNextPositions();
 	void drawBalls();
 	void drawBallsVelocities();

@@ -3,8 +3,6 @@ project(controller)
 
 set(OpenGL_GL_PREFERENCE LEGACY)
 set(USE_QT5 TRUE CACHE BOOL "Use Qt5 instead of Qt4")
-#cmake_policy(SET CMP0072 NEW)
-
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -18,8 +16,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(OpenGL REQUIRED)
-#find_package(Qt5 COMPONENTS Widgets OpenGL REQUIRED)
-#find_package(GLUT REQUIRED)
+
 if(USE_QT5)
         set(CMAKE_INCLUDE_CURRENT_DIR ON)
         set(CMAKE_AUTOMOC ON)
@@ -45,10 +42,7 @@ else()
 endif()
 
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
 find_package(ctr_msgs REQUIRED)
-find_package(vision REQUIRED)
-#include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 
 ## generate moc files for graphicalClient2
 qt4_wrap_cpp(GCLIENT_MOC_SRCS
@@ -82,7 +76,7 @@ set (libs ${libs} sslvision)
 # Build worldmap
 add_executable(worldmap ${GCLIENT_MOC_SRCS} src/map.cpp src/map/map_node.cpp src/utils/entity.cpp src/map/worldmap.hpp src/utils/vector.cpp
     src/map/gui/gltext.cc src/map/gui/soccerview.cc src/map/gui/util/field.cc src/map/exithandler.cc)
-ament_target_dependencies(worldmap rclcpp ctr_msgs vision)
+ament_target_dependencies(worldmap rclcpp ctr_msgs)
 
 target_link_libraries(worldmap ${libs})
 if(USE_QT5)
@@ -101,18 +95,19 @@ if(USE_QT5)
 endif()
 
 # Build navigation
-#add_executable(ssl_navigation src/ssl_nav_node.cpp src/navigation/navigation.cpp
-#    src/utils/vector.cpp src/utils/utils.cpp src/controller/infobus.cpp
-#    src/navigation/navalg/navigation_algorithm.cpp)
-#ament_target_dependencies(ssl_navigation rclcpp rclcpp_action ctr_msgs)
+add_executable(ssl_navigation src/ssl_nav_node.cpp src/utils/entity.cpp src/navigation/navigation.cpp
+    src/utils/vector.cpp src/utils/utils.cpp src/controller/infobus.cpp
+    src/navigation/navalg/navigation_algorithm.cpp src/navigation/navalg/pf.cpp
+    src/navigation/ctralg/control_algorithm.cpp src/navigation/ctralg/discrete_pid.cpp)
+ament_target_dependencies(ssl_navigation rclcpp rclcpp ctr_msgs)
 
-#target_link_libraries(ssl_navigation ${libs})
-#if(USE_QT5)
-#        qt5_use_modules(ssl_navigation Widgets)
-#endif()
+target_link_libraries(ssl_navigation ${libs})
+if(USE_QT5)
+        qt5_use_modules(ssl_navigation Widgets)
+endif()
 
 # Install
-install(TARGETS worldmap ssl_controller #ssl_navigation
+install(TARGETS worldmap ssl_controller ssl_navigation
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
 

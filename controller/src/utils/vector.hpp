@@ -18,13 +18,13 @@ class Vector {
     Vector(float x, float y, bool isUnknown);
     Vector(float x, float y, float z, double timestamp, bool isUnknown);
     Vector(float x, float y, double timestamp, bool isUnknown);
-    float x() {return _x;}
-    float y() {return _y;}
-    float z() {return _z;}
-    float norm() {return sqrt(pow(_x, 2)+pow(_y, 2)+pow(_z, 2));}
-    double timestamp() {return _timestamp;}
-    bool hasTimestamp() {return _hasTimestamp;}
-    bool isUnknown() {return _isUnknown;}
+    float x() const {return _x;}
+    float y() const {return _y;}
+    float z() const {return _z;}
+    float norm() const {return sqrt(pow(_x, 2)+pow(_y, 2)+pow(_z, 2));}
+    double timestamp() const {return _timestamp;}
+    bool hasTimestamp() const {return _hasTimestamp;}
+    bool isUnknown() const {return _isUnknown;}
 
     void setIsUnknown(bool isUnknown) {_isUnknown = isUnknown;}
     void setX(float x) {_x = x;}
@@ -51,6 +51,10 @@ class Vector {
 
     Vector operator/(float k) {
       return Vector(this->x()/k, this->y()/k, this->z()/k, false);
+    }
+
+    Vector operator*(float k) {
+      return Vector(this->x()*k, this->y()*k, this->z()*k, false);
     }
 };
 

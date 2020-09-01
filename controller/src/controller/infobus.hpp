@@ -40,6 +40,8 @@ public:
   Vector robotPosition(const int &group, const qint8 &id) const;
   float robotRadius(const int &group, const qint8 &id) const;
   float robotOrientation(const int &group, const qint8 &id) const;
+  int ourGroup() const;
+  int theirGroup() const;
 
   // Field
   float centerRadius() const;

@@ -1,7 +1,7 @@
 #include "utils.hpp"
 #include <cmath>
 
-float Utils::distance(Vector p1, Vector p2) {
+double Utils::distance(Vector p1, Vector p2) {
     return sqrt((pow(p1.y()-p2.y(), 2))+(pow(p1.x()-p2.x(), 2)));
 }
 
@@ -54,4 +54,15 @@ float Utils::angleDiff(float a, float b) {
     }
 
     return diff;
+}
+
+Vector Utils::rotateVectorAroundZ(Vector v, float angle) {
+  return Vector(v.x()*cos(angle)-v.y()*sin(angle), v.x()*sin(angle)+v.y()*cos(angle), v.z(), false);
+}
+
+Vector Utils::threePoints(const Vector &near, const Vector &far, float distance, float beta) {
+  double alpha = atan2(far.y()-near.y(), far.x()-near.x());
+  double gama = alpha+beta;
+  Vector p(near.x()+distance*cos(gama), near.y()+distance*sin(gama), 0.0, false);
+  return p;
 }

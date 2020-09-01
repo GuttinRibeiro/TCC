@@ -15,7 +15,8 @@ private:
   void run();
   void configure();
   std::string name() {return "SSL_Controller";}
-  ctr_msgs::msg::Navigation encodeNavMessage(Vector destination, float orientation);
+  ctr_msgs::msg::Navigation encodeNavMessage(Vector destination, float orientation,
+                                             bool avoidBall, bool avoidAllies, bool avoidEnemies);
   void kick(float kickPower = 8.0f);
   void holdBall(bool turnOn = false);
   void chipkick(float kickPower = 8.0f, float kickAngle = 0.0f);

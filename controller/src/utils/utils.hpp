@@ -5,7 +5,7 @@
 
 class Utils {
     public:
-        static float distance(Vector p1, Vector p2);
+        static double distance(Vector p1, Vector p2);
         static bool isWithinInterval(float min, float max, float value);
         static float getAngle(Vector pos);
         static float getAngle(Vector p1, Vector p2);
@@ -14,6 +14,8 @@ class Utils {
         static float distanceToLine(Vector p1, Vector p2, Vector point);
         static float wrapToTwoPi(float angle);
         static float angleDiff(float a, float b);
+        static Vector rotateVectorAroundZ(Vector v, float angle);
+        static Vector threePoints(const Vector &near, const Vector &far, float distance, float beta);
 };
 
 #endif

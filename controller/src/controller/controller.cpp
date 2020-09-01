@@ -3,7 +3,7 @@
 
 using namespace std::chrono_literals;
 
-Controller::Controller(std::string team, int id, int frequency) : Entity ("controller_"+team+"_"+std::to_string(id), frequency){
+Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("controller_"+team+"_"+std::to_string(id)), Entity (frequency) {
   // Internal
   _team = team;
   _id = (qint8) id;
@@ -47,6 +47,9 @@ Controller::Controller(std::string team, int id, int frequency) : Entity ("contr
 
   // Info bus
   _ib = new InfoBus(_id, _team, &_clientPositionRequest, &_clientInfoRequest, &_clientFieldRequest);
+
+  // Start this entity's thread
+  this->start();
 }
 
 Controller::~Controller() {
@@ -57,27 +60,39 @@ void Controller::send_command(const ctr_msgs::msg::Command &msg) {
   _pubActuator->publish(msg);
 }
 
-void Controller::goToLookTo(Vector destination, float orientation) {
+void Controller::goToLookTo(Vector destination, Vector posToLook, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   if(destination.isUnknown()) {
     std::cout << "[Controller] Desired destination is unknown!\n";
     return;
   }
 
-  orientation = Utils::wrapToTwoPi(orientation);
-  _pubNavigation->publish(encodeNavMessage(destination, orientation));
+  if(posToLook.isUnknown()) {
+    std::cout << "[Controller] posToLook is unknown!\n";
+    return;
+  }
+
+  Vector direction = posToLook-_ib->myPosition();
+  float orientation = Utils::wrapToTwoPi(Utils::getAngle(direction));
+  _pubNavigation->publish(encodeNavMessage(destination, orientation, avoidBall, avoidAllies, avoidEnemies));
 }
 
-void Controller::goTo(Vector destination) {
+void Controller::goTo(Vector destination, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   if(destination.isUnknown()) {
     std::cout << "[Controller] Desired destination is unknown!\n";
     return;
   }
 
   float orientation = Utils::wrapToTwoPi(infoBus()->myOrientation());
-  _pubNavigation->publish(encodeNavMessage(destination, orientation));
+  _pubNavigation->publish(encodeNavMessage(destination, orientation, avoidBall, avoidAllies, avoidEnemies));
 }
 
-void Controller::lookTo(float orientation) {
-  orientation = Utils::wrapToTwoPi(orientation);
-  _pubNavigation->publish(encodeNavMessage(infoBus()->myPosition(), orientation));
+void Controller::lookTo(Vector posToLook) {
+  if(posToLook.isUnknown()) {
+    std::cout << "[Controller] posToLook is unknown!\n";
+    return;
+  }
+  Vector myPos = _ib->myPosition();
+  Vector direction = posToLook-myPos;
+  float orientation = Utils::wrapToTwoPi(Utils::getAngle(direction));
+  _pubNavigation->publish(encodeNavMessage(myPos, orientation, false, false, false));
 }

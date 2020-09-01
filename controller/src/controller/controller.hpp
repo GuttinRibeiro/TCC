@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <string>
+#include "rclcpp/rclcpp.hpp"
 #include "ctr_msgs/srv/state.hpp"
 #include "ctr_msgs/srv/elementrequest.hpp"
 #include "ctr_msgs/srv/inforequest.hpp"
@@ -14,7 +15,7 @@
 #include "../utils/entity.hpp"
 #include "infobus.hpp"
 
-class Controller : public Entity {
+class Controller : public rclcpp::Node, public Entity {
   private:
     rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
     rclcpp::CallbackGroup::SharedPtr _callback_group_external_agent;
@@ -41,10 +42,10 @@ class Controller : public Entity {
     virtual void run() {return;}
     virtual void configure() {return;}
     virtual std::string name() {return "Controller";}
-    virtual ctr_msgs::msg::Navigation encodeNavMessage(Vector destination, float orientation) = 0;
-    void goToLookTo(Vector destination, float orientation);
-    void goTo(Vector destination);
-    void lookTo(float orientation);
+    virtual ctr_msgs::msg::Navigation encodeNavMessage(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) = 0;
+    void goToLookTo(Vector destination, Vector posToLook, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
+    void goTo(Vector destination, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
+    void lookTo(Vector posToLook);
     void send_command(const ctr_msgs::msg::Command &msg);
     InfoBus* infoBus() const {return _ib;}
   public:

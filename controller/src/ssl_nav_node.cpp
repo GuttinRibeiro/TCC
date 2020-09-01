@@ -2,6 +2,8 @@
 #include <QtCore>
 #include <iostream>
 
+#include "navigation/navigation.hpp"
+
 int main(int argc, char **argv) {
   // Command line argument:
   if(argc != 3) {
@@ -14,11 +16,12 @@ int main(int argc, char **argv) {
   int id = atoi(argv[2]);
 
 //  // ROS 2
-//  rclcpp::init(argc, argv);
-//  rclcpp::executors::MultiThreadedExecutor executor;
-//  auto ctr_node = std::make_shared<SSL_Controller>(team, id);
-//  executor.add_node(ctr_node);
-//  executor.spin();
-//  rclcpp::shutdown();
+  rclcpp::init(argc, argv);
+  rclcpp::executors::MultiThreadedExecutor executor;
+  auto nav_node = std::make_shared<Navigation>(team, id);
+  executor.add_node(nav_node);
+  std:: cout << "Number of threads: "<< executor.get_number_of_threads() << "\n";
+  executor.spin();
+  rclcpp::shutdown();
   return 0;
 }

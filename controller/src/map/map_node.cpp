@@ -4,7 +4,7 @@
 #include <chrono>
 #include "../utils/groups.hpp"
 
-Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : Entity ("map_"+team+std::to_string(id), frequency) {
+Map_Node::Map_Node(const std::string team, const int id, const std::string side, WorldMap *wm, Field *field, int frequency) : rclcpp::Node ("map_"+team+std::to_string(id)), Entity (frequency) {
   _team = team;
   _id = (qint8)id;
   _wm = wm;
@@ -27,6 +27,10 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken, rclcpp::QoS(10),
                                                                  std::bind(&Map_Node::visionCallback, this, std::placeholders::_1),
                                                                  vision_opt);
+  _subPath = this->create_subscription<ctr_msgs::msg::Path>("vision/path/"+robotToken, rclcpp::QoS(10),
+                                                                 std::bind(&Map_Node::pathUpdateCallback, this, std::placeholders::_1),
+                                                                 vision_opt);
+
   // Information services
   _infoService = this->create_service<ctr_msgs::srv::Inforequest>("map_service/"+robotToken+"/info",
                                                                   std::bind(&Map_Node::getInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
@@ -40,6 +44,8 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
                                                                                std::bind(&Map_Node::getFieldInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                                rmw_qos_profile_services_default,
                                                                                _callback_field_information);
+  // Start this entity's thread
+  this->start();
 }
 
 Map_Node::~Map_Node() {
@@ -69,6 +75,28 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
 
   // Init timer
   clock_gettime(CLOCK_REALTIME, &_start);
+}
+
+void Map_Node::pathUpdateCallback(const ctr_msgs::msg::Path::SharedPtr msg) {
+  QLinkedList<Vector> path;
+  for(int i = 0; i < msg->path.size(); i++) {
+    Vector vet(msg->path.at(i).x, msg->path.at(i).y, msg->path.at(i).z, false);
+    path.append(vet);
+  }
+
+  if(path.size() > 0) {
+    if(_team == "blue") {
+      _wm->addPath(Groups::BLUE, _id, path);
+    } else if(_team == "yellow") {
+      _wm->addPath(Groups::YELLOW, _id, path);
+    } else {
+      std::cout << "[Map] Incorrect attempt to update path due to an invalid group provided\n";
+    }
+  }
+}
+
+void Map_Node::configure() {
+
 }
 
 void Map_Node::run() {

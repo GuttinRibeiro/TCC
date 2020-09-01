@@ -1,11 +1,7 @@
 #include "entity.hpp"
-#include <inttypes.h>
-#include <memory>
-#include <chrono>
 
-Entity::Entity(std::string name, int frequency) : Node(name) {
-  // Create a separate thread executing entity
-  std::thread{std::bind(&Entity::execute, this, std::placeholders::_1), frequency}.detach();
+Entity::Entity(int frequency) {
+  _frequency = frequency;
 }
 
 [[noreturn]] void Entity::execute(int frequency) {
@@ -27,4 +23,9 @@ Entity::Entity(std::string name, int frequency) : Node(name) {
       std::cout << "[" +name()+ "] Required frequency is too high!\n";
     }
   }
+}
+
+void Entity::start() {
+  // Create a separate thread executing entity
+  std::thread{std::bind(&Entity::execute, this, std::placeholders::_1), _frequency}.detach();
 }

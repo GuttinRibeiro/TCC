@@ -26,6 +26,7 @@ rosidl_generate_interfaces(ctr_msgs
    msg/Position.msg
    msg/Velocity.msg
    msg/Navigation.msg
+   msg/Path.msg
    action/Nav.action
 )
 

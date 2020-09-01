@@ -13,6 +13,7 @@ class Element {
     qint8 _id;
     int _group;
     float _radius;
+    QLinkedList<Vector> _path;
 
   public:
     Element() {
@@ -39,13 +40,15 @@ class Element {
     void setId(qint8 id) {_id = id;}
     void setGroup(int group) {_group = group;}
     void setRadius(float radius) {_radius = radius;}
+    void addPath(QLinkedList<Vector> path) {_path = path;}
 
-    Vector position() {return _pos;}
-    Vector velocity() {return _vel;}
-    float orientation() {return  _ori;}
-    qint8 id() {return  _id;}
-    int group() {return  _group;}
-    float radius() {return _radius;}
+    Vector position() const {return _pos;}
+    Vector velocity() const {return _vel;}
+    float orientation() const {return  _ori;}
+    qint8 id() const {return  _id;}
+    int group() const {return  _group;}
+    float radius() const {return _radius;}
+    QLinkedList<Vector> path() const {return _path;}
 };
 
 #endif // ELEMENT_HPP
