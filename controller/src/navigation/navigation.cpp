@@ -53,12 +53,10 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   // Robot constraints
 //  _maxLinearSpeed = 2.25;
 //  _maxLinearAcceleration = 1.75;
-//  _maxAngularSpeed = 220.0/180.0*M_PI;
-//  _maxAngularAcceleration = 1.75/2.25*_maxAngularSpeed;
+  _maxAngularSpeed = 220.0/180.0*M_PI;
+  _maxAngularAcceleration = 1.75/2.25*_maxAngularSpeed;
   _maxLinearSpeed = 1.0;
   _maxLinearAcceleration = 0.8;
-  _maxAngularSpeed = 1.0;
-  _maxAngularAcceleration = _maxAngularSpeed;
   _lastLinSpeed = 0.0;
   _lastAngSpeed = 0.0;
   _mutex.unlock();
@@ -112,13 +110,11 @@ void Navigation::configure() {
   addDoubleParam(_angCtrAlg->getParamTable());
   _handler = this->add_on_set_parameters_callback(std::bind(&Navigation::paramCallback, this, std::placeholders::_1));
 
-  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/kp", 0.5));
-//  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/kd", 0.1));
+  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/kp", 0.6));
+  this->set_parameter(rclcpp::Parameter(_linCtrAlg->name()+"/kd", 0.01));
 
   this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/kp", 0.5));
-  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/kd", 0.0));
-//  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/kp", 3.75));
-//  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/kd", 0.2));
+  this->set_parameter(rclcpp::Parameter(_angCtrAlg->name()+"/kd", 0.01));
 }
 
 void Navigation::callback(ctr_msgs::msg::Navigation::SharedPtr msg) {
@@ -183,12 +179,19 @@ void Navigation::run() {
   if(angularError < -M_PI) {
     angularError += 2*M_PI;
   }
-  double desiredAngSpeed = _angCtrAlg->iterate(angularError);
+  double desiredAngSpeed = 0.0;
+  if(fabs(angularError) > 4*M_PI/180) {
+    desiredAngSpeed = _angCtrAlg->iterate(angularError);
+  }
   clock_gettime(CLOCK_REALTIME, &stop);
   auto elapsed = ((stop.tv_sec*1E9+stop.tv_nsec)-(start.tv_sec*1E9+start.tv_nsec))/1E3; // in s
 //  std::cout << "desiredSpeed: " << desiredSpeed << "| omega: " << desiredAngSpeed << "\n";
+//  std::cout << "[Navigation] Desired orientation: " << _orientation << "\n";
+//  std::cout << "[Navigation] My orientation: " << myOrientation << "\n";
 //  std::cout << "[Navigation] angularError: " << angularError << "\n";
 //  std::cout << "[Navigation] Omega: " << desiredAngSpeed << "\n";
+//  std::cout << "[Navigation] LinearError: " << linearError << "\n";
+//  std::cout << "[Navigation] Desired linear speed: " << desiredSpeed << "\n";
   _mutex.unlock();
   // Apply constraints to get a feasible desired speed:
   // Linear speed:
@@ -196,7 +199,7 @@ void Navigation::run() {
 
   // Angular speed:
   desiredAngSpeed = calculateConstrainedSpeed(desiredAngSpeed, _lastAngSpeed, -_maxAngularSpeed, _maxAngularSpeed, _maxAngularAcceleration, elapsed);
-
+//  std::cout << "[Navigation] desired angular speed: " << desiredAngSpeed << "\n";
   // Send command:
   sendVelocity(nextMovement.x()*desiredSpeed, nextMovement.y()*desiredSpeed, desiredAngSpeed);
   _lastLinSpeed = desiredSpeed;
