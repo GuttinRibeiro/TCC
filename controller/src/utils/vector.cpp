@@ -5,42 +5,63 @@ Vector::Vector() {
   _y = 0.0;
   _z = 0.0;
   _isUnknown = true;
+  _confidence = 0.0;
   _timestamp = 0.0;
   _hasTimestamp = false;
 }
 
 
-Vector::Vector(float x, float y, float z, bool isUnknown) {
+Vector::Vector(float x, float y, float z, bool isUnknown, float confidence) {
   _x = x;
   _y = y;
   _z = z;
+  if(isUnknown) {
+    _confidence = 0.0;
+  } else {
+    _confidence = confidence;
+  }
   _isUnknown = isUnknown;
   _timestamp = 0.0;
   _hasTimestamp = false;
 }
 
-Vector::Vector(float x, float y, bool isUnknown) {
+Vector::Vector(float x, float y, bool isUnknown, float confidence) {
   _x = x;
   _y = y;
   _z = 0.0;
+  if(isUnknown) {
+    _confidence = 0.0;
+  } else {
+    _confidence = confidence;
+  }
   _isUnknown = isUnknown;
   _timestamp = 0.0;
   _hasTimestamp = false;
 }
 
-Vector::Vector(float x, float y, float z, double timestamp, bool isUnknown) {
+Vector::Vector(float x, float y, float z, double timestamp, bool isUnknown, float confidence) {
   _x = x;
   _y = y;
   _z = z;
+  if(isUnknown) {
+    _confidence = 0.0;
+  } else {
+    _confidence = confidence;
+  }
   _isUnknown = isUnknown;
   _timestamp = timestamp;
   _hasTimestamp = true;
 }
 
-Vector::Vector(float x, float y, double timestamp, bool isUnknown) {
+Vector::Vector(float x, float y, double timestamp, bool isUnknown, float confidence) {
   _x = x;
   _y = y;
   _z = 0.0;
+  if(isUnknown) {
+    _confidence = 0.0;
+  } else {
+    _confidence = confidence;
+  }
   _isUnknown = isUnknown;
   _timestamp = timestamp;
   _hasTimestamp = true;

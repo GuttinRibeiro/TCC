@@ -58,7 +58,7 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
 
   //Update ball position:
   if(msg->balls.size() > 0) {
-    _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->timestamp, false));
+    _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->timestamp, false, msg->balls.at(0).confidence));
   }
 
   //Update robots:
@@ -67,9 +67,9 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
     msg->robots.pop_back();
     // Check team color:
     if(robot.team == "blue") {
-      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false));
+      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false, robot.confidence));
     } else if(robot.team == "yellow") {
-      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false));
+      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false, robot.confidence));
     }
   }
 
