@@ -24,7 +24,8 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   // Vision
   auto vision_opt = rclcpp::SubscriptionOptions();
   vision_opt.callback_group = _callback_group_vision;
-  _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken, rclcpp::QoS(10),
+  _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken,
+                                                                 rclcpp::QoS(rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT, 1), rmw_qos_profile_sensor_data),
                                                                  std::bind(&Map_Node::visionCallback, this, std::placeholders::_1),
                                                                  vision_opt);
   _subPath = this->create_subscription<ctr_msgs::msg::Path>("vision/path/"+robotToken, rclcpp::QoS(10),
