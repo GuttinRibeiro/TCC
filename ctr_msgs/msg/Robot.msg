@@ -1,6 +1,4 @@
-float32 x
-float32 y
-float32 confidence
+Position pos
 float32 orientation
 int8 id
 string team

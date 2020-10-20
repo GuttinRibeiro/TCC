@@ -6,7 +6,6 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Vision messages
-#include "ctr_msgs/msg/ball.hpp"
 #include "ctr_msgs/msg/robot.hpp"
 #include "ctr_msgs/msg/visionpkg.hpp"
 #include "ctr_msgs/msg/path.hpp"

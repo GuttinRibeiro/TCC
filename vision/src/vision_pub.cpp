@@ -76,10 +76,11 @@ void VisionNode::split_packages() {
 
         // Its own position:
         auto rob_msg = ctr_msgs::msg::Robot();
-        rob_msg.x = selected.position().x();
-        rob_msg.y = selected.position().y();
+        rob_msg.pos.x = selected.position().x();
+        rob_msg.pos.y = selected.position().y();
+        rob_msg.pos.z = 0.0;
         rob_msg.id = selected.id();
-        rob_msg.confidence = selected.position().confidence();
+        rob_msg.pos.confidence = selected.position().confidence();
         rob_msg.orientation = Utils::wrapToTwoPi(selected.orientation());
         rob_msg.team = "blue";
         message.robots.push_back(rob_msg);
@@ -123,9 +124,10 @@ void VisionNode::split_packages() {
             if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                 //Check for obstruction:
                 if(checkVisibility(selected.position(), visible_robots, _ball, selected.radius())) {
-                    auto ball_msg = ctr_msgs::msg::Ball();
+                    auto ball_msg = ctr_msgs::msg::Position();
                     ball_msg.x = _ball.x();
                     ball_msg.y = _ball.y();
+                    ball_msg.z = 0.0;
                     ball_msg.confidence = _ball.confidence();
                     message.balls.push_back(ball_msg);
                 }
@@ -137,9 +139,10 @@ void VisionNode::split_packages() {
             Robot target = visible_robots.takeAt(j);
             if(checkVisibility(selected.position(), visible_robots, target.position(), 2*selected.radius())) {
                 auto rob_msg = ctr_msgs::msg::Robot();
-                rob_msg.x = target.position().x();
-                rob_msg.y = target.position().y();
-                rob_msg.confidence = target.position().confidence();
+                rob_msg.pos.x = target.position().x();
+                rob_msg.pos.y = target.position().y();
+                rob_msg.pos.z = 0.0;
+                rob_msg.pos.confidence = target.position().confidence();
                 rob_msg.id = target.id();
                 rob_msg.team = target.team() == Colors::YELLOW ? "yellow" : "blue";
                 message.robots.push_back(rob_msg);
@@ -162,9 +165,10 @@ void VisionNode::split_packages() {
 
         // Its own position:
         auto rob_msg = ctr_msgs::msg::Robot();
-        rob_msg.x = selected.position().x();
-        rob_msg.y = selected.position().y();
-        rob_msg.confidence = selected.position().confidence();
+        rob_msg.pos.x = selected.position().x();
+        rob_msg.pos.y = selected.position().y();
+        rob_msg.pos.z = 0.0;
+        rob_msg.pos.confidence = selected.position().confidence();
         rob_msg.id = selected.id();
         rob_msg.orientation = Utils::wrapToTwoPi(selected.orientation());
         rob_msg.team = "yellow";
@@ -210,9 +214,10 @@ void VisionNode::split_packages() {
             if(Utils::isWithinInterval(selected.getSensor().minAngle(), selected.getSensor().maxAngle(), diff)) {
                 //Check for obstruction:
                 if(checkVisibility(selected.position(), visible_robots, _ball, selected.radius())) {
-                    auto ball_msg = ctr_msgs::msg::Ball();
+                    auto ball_msg = ctr_msgs::msg::Position();
                     ball_msg.x = _ball.x();
                     ball_msg.y = _ball.y();
+                    ball_msg.z = 0.0;
                     ball_msg.confidence = _ball.confidence();
                     message.balls.push_back(ball_msg);
                 }
@@ -224,9 +229,10 @@ void VisionNode::split_packages() {
             Robot target = visible_robots.takeAt(j);
             if(checkVisibility(selected.position(), visible_robots, target.position(), 2*selected.radius())) {
                 auto rob_msg = ctr_msgs::msg::Robot();
-                rob_msg.x = target.position().x();
-                rob_msg.y = target.position().y();
-                rob_msg.confidence = target.position().confidence();
+                rob_msg.pos.x = target.position().x();
+                rob_msg.pos.y = target.position().y();
+                rob_msg.pos.z = 0.0;
+                rob_msg.pos.confidence = target.position().confidence();
                 rob_msg.id = target.id();
                 rob_msg.team = target.team() == Colors::YELLOW ? "yellow" : "blue";
                 message.robots.push_back(rob_msg);

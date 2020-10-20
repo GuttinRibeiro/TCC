@@ -67,9 +67,9 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
     msg->robots.pop_back();
     // Check team color:
     if(robot.team == "blue") {
-      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false, robot.confidence));
+      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->timestamp, false, robot.pos.confidence));
     } else if(robot.team == "yellow") {
-      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false, robot.confidence));
+      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->timestamp, false, robot.pos.confidence));
     }
   }
 

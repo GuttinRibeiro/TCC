@@ -20,7 +20,6 @@ rosidl_generate_interfaces(ctr_msgs
    srv/Inforequest.srv
    srv/Fieldinformationrequest.srv
    msg/Command.msg
-   msg/Ball.msg
    msg/Robot.msg
    msg/Visionpkg.msg
    msg/Position.msg

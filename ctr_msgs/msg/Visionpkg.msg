@@ -1,3 +1,3 @@
 Robot[] robots
-Ball[] balls
+Position[] balls
 float64 timestamp
