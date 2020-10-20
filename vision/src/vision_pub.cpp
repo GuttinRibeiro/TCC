@@ -79,6 +79,7 @@ void VisionNode::split_packages() {
         rob_msg.pos.x = selected.position().x();
         rob_msg.pos.y = selected.position().y();
         rob_msg.pos.z = 0.0;
+        rob_msg.pos.isvalid = true;
         rob_msg.id = selected.id();
         rob_msg.pos.confidence = selected.position().confidence();
         rob_msg.orientation = Utils::wrapToTwoPi(selected.orientation());
@@ -129,6 +130,7 @@ void VisionNode::split_packages() {
                     ball_msg.y = _ball.y();
                     ball_msg.z = 0.0;
                     ball_msg.confidence = _ball.confidence();
+                    ball_msg.isvalid = true;
                     message.balls.push_back(ball_msg);
                 }
             }
@@ -142,7 +144,9 @@ void VisionNode::split_packages() {
                 rob_msg.pos.x = target.position().x();
                 rob_msg.pos.y = target.position().y();
                 rob_msg.pos.z = 0.0;
+                rob_msg.pos.isvalid = true;
                 rob_msg.pos.confidence = target.position().confidence();
+                rob_msg.orientation = target.orientation();
                 rob_msg.id = target.id();
                 rob_msg.team = target.team() == Colors::YELLOW ? "yellow" : "blue";
                 message.robots.push_back(rob_msg);
@@ -168,6 +172,7 @@ void VisionNode::split_packages() {
         rob_msg.pos.x = selected.position().x();
         rob_msg.pos.y = selected.position().y();
         rob_msg.pos.z = 0.0;
+        rob_msg.pos.isvalid = true;
         rob_msg.pos.confidence = selected.position().confidence();
         rob_msg.id = selected.id();
         rob_msg.orientation = Utils::wrapToTwoPi(selected.orientation());
@@ -218,6 +223,7 @@ void VisionNode::split_packages() {
                     ball_msg.x = _ball.x();
                     ball_msg.y = _ball.y();
                     ball_msg.z = 0.0;
+                    ball_msg.isvalid = true;
                     ball_msg.confidence = _ball.confidence();
                     message.balls.push_back(ball_msg);
                 }
@@ -232,7 +238,9 @@ void VisionNode::split_packages() {
                 rob_msg.pos.x = target.position().x();
                 rob_msg.pos.y = target.position().y();
                 rob_msg.pos.z = 0.0;
+                rob_msg.pos.isvalid = true;
                 rob_msg.pos.confidence = target.position().confidence();
+                rob_msg.orientation = target.orientation();
                 rob_msg.id = target.id();
                 rob_msg.team = target.team() == Colors::YELLOW ? "yellow" : "blue";
                 message.robots.push_back(rob_msg);
