@@ -23,15 +23,18 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   // Vision
   auto vision_opt = rclcpp::SubscriptionOptions();
   vision_opt.callback_group = _callback_group_vision;
+  vision_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
   _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken,
                                                                  rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
                                                                  std::bind(&Map_Node::visionCallback, this, std::placeholders::_1),
                                                                  vision_opt);
 
 
+  auto path_opt = rclcpp::SubscriptionOptions();
+  path_opt.callback_group = _callback_group_vision;
   _subPath = this->create_subscription<ctr_msgs::msg::Path>("vision/path/"+robotToken, rclcpp::QoS(10),
                                                                  std::bind(&Map_Node::pathUpdateCallback, this, std::placeholders::_1),
-                                                                 vision_opt);
+                                                                 path_opt);
 
   // Information services
   _infoService = this->create_service<ctr_msgs::srv::Inforequest>("map_service/"+robotToken+"/info",
@@ -56,7 +59,7 @@ Map_Node::~Map_Node() {
 
 void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
 //  std::cout << "[Map] Atraso total até o recebimento da mensagem: " << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << " ms\n";
-  std::cout << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << "\n";
+//  std::cout << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << "\n";
   //Update ball position:
   if(msg->balls.size() > 0) {
     _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->timestamp, false, msg->balls.at(0).confidence));

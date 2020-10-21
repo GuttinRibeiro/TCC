@@ -30,7 +30,7 @@ VisionNode::VisionNode(RoboCupSSLClient *client) : Node("grsim_node") {
 
     _client = client;
     clock_gettime(CLOCK_REALTIME, &_start);
-    _timer = this->create_wall_timer(5ms, std::bind(&VisionNode::client_callback, this));
+    _timer = this->create_wall_timer(12ms, std::bind(&VisionNode::client_callback, this));
     _ball = Position();
 }
 
