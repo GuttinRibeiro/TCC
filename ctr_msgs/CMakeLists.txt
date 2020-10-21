@@ -13,6 +13,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(ctr_msgs
    srv/State.srv
@@ -27,6 +28,7 @@ rosidl_generate_interfaces(ctr_msgs
    msg/Navigation.msg
    msg/Path.msg
    action/Nav.action
+   DEPENDENCIES std_msgs
 )
 
 ament_export_dependencies(rosidl_default_runtime)
