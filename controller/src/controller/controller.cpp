@@ -20,13 +20,16 @@ Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("
   // Actuator
   auto act_opt = rclcpp::PublisherOptions();
   act_opt.callback_group = _callback_group_actuator;
-  _pubActuator = this->create_publisher<ctr_msgs::msg::Command>("actuator/command/"+robotToken, rclcpp::QoS(10), act_opt);
+  _pubActuator = this->create_publisher<ctr_msgs::msg::Command>("actuator/command/"+robotToken,
+                                                                rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
+                                                                act_opt);
 
   // Navigation
   auto nav_opt = rclcpp::PublisherOptions();
   nav_opt.callback_group = _callback_group_navigation;
   _pubNavigation = this->create_publisher<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken,
-                                                                     rclcpp::QoS(10), nav_opt);
+                                                                     rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
+                                                                     nav_opt);
   // External Agent
   _serviceExternalAgent = this->create_service<ctr_msgs::srv::State>("state_service/"+robotToken,
                                                                      std::bind(&Controller::updateState, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),

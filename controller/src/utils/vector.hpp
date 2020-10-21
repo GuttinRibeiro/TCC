@@ -9,7 +9,7 @@ class Vector {
     float _y;
     float _z;
     float _confidence;
-    double _timestamp;
+    int32_t _timestamp;
     bool  _isUnknown;
     bool _hasTimestamp;
 
@@ -17,8 +17,8 @@ class Vector {
     Vector();
     Vector(float x, float y, float z, bool isUnknown, float confidence = 1.0);
     Vector(float x, float y, bool isUnknown, float confidence = 1.0);
-    Vector(float x, float y, float z, double timestamp, bool isUnknown, float confidence = 1.0);
-    Vector(float x, float y, double timestamp, bool isUnknown, float confidence = 1.0);
+    Vector(float x, float y, float z, int32_t timestamp, bool isUnknown, float confidence = 1.0);
+    Vector(float x, float y, int32_t timestamp, bool isUnknown, float confidence = 1.0);
     float x() const {return _x;}
     float y() const {return _y;}
     float z() const {return _z;}

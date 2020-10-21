@@ -39,7 +39,7 @@ Vector::Vector(float x, float y, bool isUnknown, float confidence) {
   _hasTimestamp = false;
 }
 
-Vector::Vector(float x, float y, float z, double timestamp, bool isUnknown, float confidence) {
+Vector::Vector(float x, float y, float z, int32_t timestamp, bool isUnknown, float confidence) {
   _x = x;
   _y = y;
   _z = z;
@@ -53,7 +53,7 @@ Vector::Vector(float x, float y, float z, double timestamp, bool isUnknown, floa
   _hasTimestamp = true;
 }
 
-Vector::Vector(float x, float y, double timestamp, bool isUnknown, float confidence) {
+Vector::Vector(float x, float y, int32_t timestamp, bool isUnknown, float confidence) {
   _x = x;
   _y = y;
   _z = 0.0;

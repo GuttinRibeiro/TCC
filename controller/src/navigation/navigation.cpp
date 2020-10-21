@@ -24,7 +24,9 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   // Actuator
   auto act_opt = rclcpp::PublisherOptions();
   act_opt.callback_group = _callback_group_actuator;
-  _pubActuator = this->create_publisher<ctr_msgs::msg::Velocity>("actuator/velocity/"+robotToken, rclcpp::QoS(10), act_opt);
+  _pubActuator = this->create_publisher<ctr_msgs::msg::Velocity>("actuator/velocity/"+robotToken,
+                                                                 rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
+                                                                 act_opt);
 
   // Map
   _clientElementRequest = this->create_client<ctr_msgs::srv::Elementrequest>("map_service/"+robotToken+"/position",
@@ -47,7 +49,10 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   // Controller subscriber
   auto ctr_opt = rclcpp::SubscriptionOptions();
   ctr_opt.callback_group = _callback_group_nav_messages;
-  _subNavMessages = this->create_subscription<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken, rclcpp::QoS(10),
+  ctr_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
+  ctr_opt.topic_stats_options.publish_topic = "navigation/motion_specification/"+robotToken+"/statistics";
+  _subNavMessages = this->create_subscription<ctr_msgs::msg::Navigation>("navigation/motion_specification/"+robotToken,
+                                                                         rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
                                                                          std::bind(&Navigation::callback, this, std::placeholders::_1), ctr_opt);
 
   // Robot constraints
@@ -87,6 +92,7 @@ void Navigation::sendVelocity(float vx, float vy, float vang) {
   message.vx = vx;
   message.vy = vy;
   message.vang = vang;
+  message.header.stamp = this->get_clock()->now();
   _pubActuator->publish(message);
 }
 

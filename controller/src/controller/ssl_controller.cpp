@@ -44,6 +44,7 @@ void SSL_Controller::kick(float kickPower) {
     cmd.hasholdballinformation = false;
     cmd.kickspeedz = 0.0;
     cmd.kickspeedy = kickPower;
+    cmd.header.stamp = this->get_clock()->now();
     send_command(cmd);
   }
 }
@@ -57,6 +58,7 @@ void SSL_Controller::chipkick(float kickPower, float kickAngle) {
     cmd.hasholdballinformation = false;
     cmd.kickspeedz = _kickSpeedZ;
     cmd.kickspeedy = _kickSpeedY;
+    cmd.header.stamp = this->get_clock()->now();
     send_command(cmd);
   }
 }
@@ -68,6 +70,7 @@ void SSL_Controller::holdBall(bool turnOn) {
     cmd.haskickinformation = false;
     cmd.hasholdballinformation = true;
     cmd.holdball = turnOn;
+    cmd.header.stamp = this->get_clock()->now();
     send_command(cmd);
   }
 }
@@ -84,5 +87,6 @@ ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, f
   ret.avoidball = avoidBall;
   ret.avoidallies = avoidAllies;
   ret.avoidenemies = avoidEnemies;
+  ret.header.stamp = this->get_clock()->now();
   return ret;
 }

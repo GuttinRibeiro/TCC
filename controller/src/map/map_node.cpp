@@ -24,6 +24,7 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   auto vision_opt = rclcpp::SubscriptionOptions();
   vision_opt.callback_group = _callback_group_vision;
   vision_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
+  vision_opt.topic_stats_options.publish_topic = "/vision/"+robotToken+"/statistics";
   _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken,
                                                                  rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
                                                                  std::bind(&Map_Node::visionCallback, this, std::placeholders::_1),
@@ -32,6 +33,8 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
 
   auto path_opt = rclcpp::SubscriptionOptions();
   path_opt.callback_group = _callback_group_vision;
+  path_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
+  path_opt.topic_stats_options.publish_topic = "/vision/path/"+robotToken+"/statistics";
   _subPath = this->create_subscription<ctr_msgs::msg::Path>("vision/path/"+robotToken, rclcpp::QoS(10),
                                                                  std::bind(&Map_Node::pathUpdateCallback, this, std::placeholders::_1),
                                                                  path_opt);
@@ -58,11 +61,9 @@ Map_Node::~Map_Node() {
 }
 
 void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
-//  std::cout << "[Map] Atraso total até o recebimento da mensagem: " << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << " ms\n";
-//  std::cout << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << "\n";
   //Update ball position:
   if(msg->balls.size() > 0) {
-    _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->timestamp, false, msg->balls.at(0).confidence));
+    _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->header.stamp.sec, false, msg->balls.at(0).confidence));
   }
 
   //Update robots:
@@ -71,9 +72,9 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
     msg->robots.pop_back();
     // Check team color:
     if(robot.team == "blue") {
-      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->timestamp, false, robot.pos.confidence));
+      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->header.stamp.sec, false, robot.pos.confidence));
     } else if(robot.team == "yellow") {
-      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->timestamp, false, robot.pos.confidence));
+      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->header.stamp.sec, false, robot.pos.confidence));
     }
   }
 }
