@@ -27,6 +27,8 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
                                                                  rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
                                                                  std::bind(&Map_Node::visionCallback, this, std::placeholders::_1),
                                                                  vision_opt);
+
+
   _subPath = this->create_subscription<ctr_msgs::msg::Path>("vision/path/"+robotToken, rclcpp::QoS(10),
                                                                  std::bind(&Map_Node::pathUpdateCallback, this, std::placeholders::_1),
                                                                  vision_opt);
@@ -53,7 +55,8 @@ Map_Node::~Map_Node() {
 }
 
 void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
-  std::cout << "[Map] Atraso total até o recebimento da mensagem: " << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << " ms\n";
+//  std::cout << "[Map] Atraso total até o recebimento da mensagem: " << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << " ms\n";
+  std::cout << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << "\n";
   //Update ball position:
   if(msg->balls.size() > 0) {
     _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->timestamp, false, msg->balls.at(0).confidence));
