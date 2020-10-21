@@ -10,8 +10,7 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   _wm = wm;
   _side = side;
   _field = field;
-  _time_now = 0.0;
-  clock_gettime(CLOCK_REALTIME, &_start);
+  _time_now = this->get_clock()->now().seconds();
 
   std::string robotToken = team+"_"+std::to_string(id);
 
@@ -54,9 +53,7 @@ Map_Node::~Map_Node() {
 }
 
 void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
-  // Synchronize internal timer using messages timestamp
-  _time_now = msg->timestamp;
-
+  std::cout << "[Map] Atraso total até o recebimento da mensagem: " << (this->get_clock()->now().seconds()-msg->timestamp)*1000 << " ms\n";
   //Update ball position:
   if(msg->balls.size() > 0) {
     _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->timestamp, false, msg->balls.at(0).confidence));
@@ -73,9 +70,6 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
       _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->timestamp, false, robot.pos.confidence));
     }
   }
-
-  // Init timer
-  clock_gettime(CLOCK_REALTIME, &_start);
 }
 
 void Map_Node::pathUpdateCallback(const ctr_msgs::msg::Path::SharedPtr msg) {
@@ -101,11 +95,8 @@ void Map_Node::configure() {
 }
 
 void Map_Node::run() {
-  // Stop timer
-  clock_gettime(CLOCK_REALTIME, &_stop);
-  // Count how many seconds have passed since last packet received
-  _time_now += ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
   // Check all timestamps and remove old information
+  _time_now = this->get_clock()->now().seconds();
   _wm->checkElements(_time_now);
 }
 

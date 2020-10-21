@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
   app.setApplicationVersion("0.0");
 
   Field_SSL2019 field;
-  WorldMap wm(5000/40);
+  WorldMap wm(5000/60);
   GLSoccerView *view = new GLSoccerView();
   view->show();
 

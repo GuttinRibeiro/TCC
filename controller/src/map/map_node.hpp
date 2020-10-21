@@ -25,7 +25,6 @@ private:
   std::string _side;
   WorldMap *_wm;
   Field *_field;
-  timespec _start, _stop;
   double _time_now;
 
   // Callback groups to separate work into queues

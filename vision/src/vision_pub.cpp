@@ -158,7 +158,8 @@ void VisionNode::split_packages() {
 
         // Publish the desired message:
         clock_gettime(CLOCK_REALTIME, &_stop);
-        message.timestamp = ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
+//        message.timestamp = ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
+        message.timestamp = this->get_clock()->now().seconds();
         _publisherBlue.value(ids[i])->publish(message);
     }
 
@@ -252,7 +253,8 @@ void VisionNode::split_packages() {
 
         // Publish the desired message:
         clock_gettime(CLOCK_REALTIME, &_stop);
-        message.timestamp = ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
+//        message.timestamp = ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
+        message.timestamp = this->get_clock()->now().seconds();
         _publisherYellow.value(ids[i])->publish(message);
     }    
 
