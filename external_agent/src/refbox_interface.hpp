@@ -8,7 +8,7 @@
 #include <ctime>
 #include <string>
 #include "referee.pb.h"
-#include "ctr_msgs/srv/state.hpp"
+#include "ctr_msgs/msg/state.hpp"
 
 class Refbox_Interface : public rclcpp::Node {
     private:
@@ -23,10 +23,9 @@ class Refbox_Interface : public rclcpp::Node {
         std::string _yellowState;
         qint8 _blueGk;
         qint8 _yellowGk;
-        QHash<int, QHash<qint8, rclcpp::Client<ctr_msgs::srv::State>::SharedPtr>> _clientTable;
+        QHash<int, QHash<qint8, rclcpp::Publisher<ctr_msgs::msg::State>::SharedPtr>> _clientTable;
 
-        rclcpp::CallbackGroup::SharedPtr _callback_group_timer;
-        rclcpp::CallbackGroup::SharedPtr _callback_group_client;
+        rclcpp::CallbackGroup::SharedPtr _callback_group;
 
         void callback();
         void updateStates();

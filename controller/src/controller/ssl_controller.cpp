@@ -18,15 +18,12 @@ SSL_Controller::~SSL_Controller() {
 
 }
 
-void SSL_Controller::updateState(const std::shared_ptr<rmw_request_id_t> request_header,
-                                 const std::shared_ptr<ctr_msgs::srv::State::Request> request,
-                                 const std::shared_ptr<ctr_msgs::srv::State::Response> response) {
-  (void) request_header;
-  response->feedback = "State updated successfully";
+void SSL_Controller::updateState(ctr_msgs::msg::State::SharedPtr msg) {
+  std::cout << "[SSL Controller] New state: " << msg->state << "\n";
 }
 
 void SSL_Controller::configure() {
-  std::cout << "SSL controller configured!\n";
+  std::cout << "SSL controller was configured!\n";
 }
 
 void SSL_Controller::run() {

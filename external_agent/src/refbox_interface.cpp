@@ -5,6 +5,18 @@
 
 using namespace std::chrono_literals;
 
+static const rmw_qos_profile_t rmw_qos_custom_profile {
+    RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+    100,
+    RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+    RMW_QOS_POLICY_DURABILITY_VOLATILE,
+    RMW_QOS_DEADLINE_DEFAULT,
+    RMW_QOS_LIFESPAN_DEFAULT,
+    RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
+    RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
+    false
+};
+
 Refbox_Interface::Refbox_Interface(QHash<int, QList<qint8>> robots, QString ipAddress, int port) : Node("refbox_node") {
     _port = port;
     _ip = QHostAddress(ipAddress);
@@ -21,7 +33,10 @@ Refbox_Interface::Refbox_Interface(QHash<int, QList<qint8>> robots, QString ipAd
         std::cout << "[ERROR] SSLReferee: failed to join multicast group (" << _socket->errorString().toStdString() << ")\n"; 
     }
 
-    _callback_group_client = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    // Callback mutualmente exclusivas para evitar o envio de dados que não sejam os mais recentes
+    _callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    auto pub_opt = rclcpp::PublisherOptions();
+    pub_opt.callback_group = _callback_group;
 
     _robots = robots;
     QList<int> keys = _robots.keys();
@@ -36,19 +51,19 @@ Refbox_Interface::Refbox_Interface(QHash<int, QList<qint8>> robots, QString ipAd
 
         // For each player:
         QList<qint8> ids = _robots.value(keys[i]);
-        QHash<qint8, rclcpp::Client<ctr_msgs::srv::State>::SharedPtr> element;
+        QHash<qint8, rclcpp::Publisher<ctr_msgs::msg::State>::SharedPtr> element;
         for(int j = 0; j < ids.size(); j++) {
-            auto client = this->create_client<ctr_msgs::srv::State>("state_service/"+team+std::to_string(ids[j]),
-                                                                    rmw_qos_profile_services_default, _callback_group_client);
+            auto client = this->create_publisher<ctr_msgs::msg::State>("external_agent/state/"+team+std::to_string(ids[j]),
+                                                                    rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_custom_profile.history, rmw_qos_custom_profile.depth), rmw_qos_custom_profile),
+                                                                    pub_opt);
             element.insert(ids[j], client);
         }
         _clientTable.insert(keys[i], element);
     }
 
     // Internal loop
-    _callback_group_timer = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-    _timer = this->create_wall_timer(20ms, std::bind(&Refbox_Interface::callback, this), _callback_group_timer);
-    std::cout << "Refbox node created!\n";
+    _timer = this->create_wall_timer(20ms, std::bind(&Refbox_Interface::callback, this), _callback_group);
+    std::cout << "Refbox node was created!\n";
 }
 
 Refbox_Interface::~Refbox_Interface() {
@@ -164,50 +179,27 @@ void Refbox_Interface::updateStates() {
         QList<qint8> ids = _clientTable.value(teamKeys[i]).keys();
         if(teamKeys[i] == Colors::BLUE) {
             for(int j = 0; j < ids.size(); j++) {
-              std::cout << "test\n";
-                auto request = std::make_shared<ctr_msgs::srv::State::Request>();
-                request->state = _blueState;
+                auto message = ctr_msgs::msg::State();
+                message.state = _blueState;
                 if(ids[j] == _blueGk) {
-                    request->isgk = true;
+                    message.isgk = true;
                 } else {
-                    request->isgk = false;
+                    message.isgk = false;
                 }
 
-                // Wait for service:
-                while(!_clientTable.value(teamKeys[i]).value(ids[j])->wait_for_service(1s)) {
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
-                }
-
-                auto result = _clientTable.value(teamKeys[i]).value(ids[j])->async_send_request(request);
-                auto status = result.wait_for(std::chrono::seconds(3));
-                if(status == std::future_status::ready) {
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Response received: %s", result.get()->feedback.c_str());
-                } else {
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Failed to send status");
-                }
+                _clientTable.value(teamKeys[i]).value(ids[j])->publish(message);
             }
         } else {
             for(int j = 0; j < ids.size(); j++) {
-                auto request = std::make_shared<ctr_msgs::srv::State::Request>();
-                request->state = _yellowState;
+                auto message = ctr_msgs::msg::State();
+                message.state = _yellowState;
                 if(ids[j] == _yellowGk) {
-                    request->isgk = true;
+                    message.isgk = true;
                 } else {
-                    request->isgk = false;
+                    message.isgk = false;
                 }
 
-                // Wait for service:
-                while(!_clientTable.value(teamKeys[i]).value(ids[j])->wait_for_service(1s)) {
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
-                }
-
-                auto result = _clientTable.value(teamKeys[i]).value(ids[j])->async_send_request(request);
-                auto status = result.wait_for(std::chrono::seconds(3));
-                if(status == std::future_status::ready) {
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Response received is %s", result.get()->feedback.c_str());
-                } else {
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Failed to send status");
-                }
+                _clientTable.value(teamKeys[i]).value(ids[j])->publish(message);
             }            
         }
     }

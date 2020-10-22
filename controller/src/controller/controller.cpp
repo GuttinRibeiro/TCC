@@ -3,6 +3,18 @@
 
 using namespace std::chrono_literals;
 
+static const rmw_qos_profile_t rmw_qos_custom_profile {
+    RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+    100,
+    RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+    RMW_QOS_POLICY_DURABILITY_VOLATILE,
+    RMW_QOS_DEADLINE_DEFAULT,
+    RMW_QOS_LIFESPAN_DEFAULT,
+    RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
+    RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
+    false
+};
+
 Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("controller_"+team+"_"+std::to_string(id)), Entity (frequency) {
   // Internal
   _team = team;
@@ -31,10 +43,15 @@ Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("
                                                                      rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
                                                                      nav_opt);
   // External Agent
-  _serviceExternalAgent = this->create_service<ctr_msgs::srv::State>("state_service/"+robotToken,
-                                                                     std::bind(&Controller::updateState, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-                                                                     rmw_qos_profile_services_default,
-                                                                     _callback_group_external_agent);
+  auto ea_opt = rclcpp::SubscriptionOptions();
+  ea_opt.callback_group = _callback_group_external_agent;
+  ea_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
+  ea_opt.topic_stats_options.publish_topic = "external_agent/state/"+robotToken+"/statistics";
+  _subExternalAgent = this->create_subscription<ctr_msgs::msg::State>("external_agent/state/"+robotToken,
+                                                                      rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_custom_profile.history, rmw_qos_custom_profile.depth), rmw_qos_custom_profile),
+                                                                      std::bind(&Controller::updateState, this, std::placeholders::_1),
+                                                                      ea_opt);
+
   // Map
   _clientPositionRequest = this->create_client<ctr_msgs::srv::Elementrequest>("map_service/"+robotToken+"/position",
                                                                                rmw_qos_profile_services_default,

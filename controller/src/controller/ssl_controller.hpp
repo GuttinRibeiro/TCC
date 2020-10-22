@@ -9,9 +9,7 @@ private:
   float _kickSpeedY;
   float _kickSpeedZ;
 
-  void updateState(const std::shared_ptr<rmw_request_id_t> request_header,
-                   const std::shared_ptr<ctr_msgs::srv::State::Request> request,
-                   const std::shared_ptr<ctr_msgs::srv::State::Response> response);
+  void updateState(ctr_msgs::msg::State::SharedPtr msg);
   void run();
   void configure();
   std::string name() {return "SSL_Controller";}
