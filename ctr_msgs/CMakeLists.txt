@@ -18,7 +18,7 @@ find_package(std_msgs REQUIRED)
 rosidl_generate_interfaces(ctr_msgs
    srv/State.srv
    srv/Elementrequest.srv
-   srv/Inforequest.srv
+   srv/Idrequest.srv
    srv/Fieldinformationrequest.srv
    msg/Command.msg
    msg/Robot.msg

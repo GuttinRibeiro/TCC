@@ -6,12 +6,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "../utils/entity.hpp"
 #include "ctr_msgs/srv/elementrequest.hpp"
-#include "ctr_msgs/srv/inforequest.hpp"
+#include "ctr_msgs/srv/idrequest.hpp"
 #include "ctr_msgs/srv/fieldinformationrequest.hpp"
 #include "ctr_msgs/msg/velocity.hpp"
 #include "ctr_msgs/msg/navigation.hpp"
 #include "ctr_msgs/msg/path.hpp"
-#include "../controller/infobus.hpp"
+#include "../utils/infobus.hpp"
 #include "../utils/vector.hpp"
 #include "navalg/pf.hpp"
 #include "ctralg/discrete_pid.hpp"
@@ -24,7 +24,7 @@ private:
   rclcpp::CallbackGroup::SharedPtr _callback_group_nav_messages;
 
   rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr _clientElementRequest;
-  rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr _clientInfoRequest;
+  rclcpp::Client<ctr_msgs::srv::Idrequest>::SharedPtr _clientInfoRequest;
   rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _clientFieldRequest;
   rclcpp::Publisher<ctr_msgs::msg::Path>::SharedPtr _pubPath;
   rclcpp::Publisher<ctr_msgs::msg::Velocity>::SharedPtr _pubActuator;

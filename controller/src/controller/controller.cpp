@@ -57,7 +57,7 @@ Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("
                                                                                rmw_qos_profile_services_default,
                                                                                _callback_group_map);
 
-  _clientInfoRequest = this->create_client<ctr_msgs::srv::Inforequest>("map_service/"+robotToken+"/info",
+  _clientInfoRequest = this->create_client<ctr_msgs::srv::Idrequest>("map_service/"+robotToken+"/id",
                                                                        rmw_qos_profile_services_default,
                                                                        _callback_group_map);
 

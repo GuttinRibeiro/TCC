@@ -4,9 +4,9 @@
 #include <string>
 #include <QList>
 #include "rclcpp/rclcpp.hpp"
-#include "../utils/vector.hpp"
+#include "vector.hpp"
 #include "ctr_msgs/srv/elementrequest.hpp"
-#include "ctr_msgs/srv/inforequest.hpp"
+#include "ctr_msgs/srv/idrequest.hpp"
 #include "ctr_msgs/srv/fieldinformationrequest.hpp"
 
 class InfoBus {
@@ -14,14 +14,14 @@ private:
   int _group;
   qint8 _id;
   rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr *_clientPosition;
-  rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr *_clientInformation;
+  rclcpp::Client<ctr_msgs::srv::Idrequest>::SharedPtr *_clientInformation;
   rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr *_clientField;
 
   float requestFieldValue(std::string info_requested) const;
   Vector requestFieldPosition(std::string info_requested) const;
 public:
   InfoBus(qint8 id, std::string team, rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr *clientPosition,
-          rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr *clientInformation,
+          rclcpp::Client<ctr_msgs::srv::Idrequest>::SharedPtr *clientInformation,
           rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr *cliendField);
 
   // Myself

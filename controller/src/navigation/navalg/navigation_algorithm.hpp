@@ -1,7 +1,7 @@
 #ifndef NAVIGATION_ALGORITHM_HPP
 #define NAVIGATION_ALGORITHM_HPP
 
-#include "../../controller/infobus.hpp"
+#include "../../utils/infobus.hpp"
 #include "../../utils/entity.hpp"
 #include "../../utils/vector.hpp"
 #include "../../utils/groups.hpp"

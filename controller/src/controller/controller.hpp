@@ -5,7 +5,7 @@
 #include <string>
 #include "rclcpp/rclcpp.hpp"
 #include "ctr_msgs/srv/elementrequest.hpp"
-#include "ctr_msgs/srv/inforequest.hpp"
+#include "ctr_msgs/srv/idrequest.hpp"
 #include "ctr_msgs/srv/fieldinformationrequest.hpp"
 #include "ctr_msgs/msg/state.hpp"
 #include "ctr_msgs/msg/command.hpp"
@@ -13,7 +13,7 @@
 #include "../utils/field.hpp"
 #include "../utils/vector.hpp"
 #include "../utils/entity.hpp"
-#include "infobus.hpp"
+#include "../utils/infobus.hpp"
 
 class Controller : public rclcpp::Node, public Entity {
   private:
@@ -26,7 +26,7 @@ class Controller : public rclcpp::Node, public Entity {
     rclcpp::Publisher<ctr_msgs::msg::Command>::SharedPtr _pubActuator;
     rclcpp::Publisher<ctr_msgs::msg::Navigation>::SharedPtr _pubNavigation;
     rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr _clientPositionRequest;
-    rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr _clientInfoRequest;
+    rclcpp::Client<ctr_msgs::srv::Idrequest>::SharedPtr _clientInfoRequest;
     rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _clientFieldRequest;
 
     InfoBus *_ib;

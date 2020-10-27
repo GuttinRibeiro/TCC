@@ -3,7 +3,7 @@
 
 InfoBus::InfoBus(qint8 id, std::string team,
                  rclcpp::Client<ctr_msgs::srv::Elementrequest>::SharedPtr *clientPosition,
-                 rclcpp::Client<ctr_msgs::srv::Inforequest>::SharedPtr *clientInformation,
+                 rclcpp::Client<ctr_msgs::srv::Idrequest>::SharedPtr *clientInformation,
                  rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr *clientField) {
   _id = id;
   _clientPosition = clientPosition;
@@ -45,7 +45,7 @@ float InfoBus::ballOrientation() const {
 }
 
 QList<qint8> InfoBus::ourPlayers() const {
-  auto request = std::make_shared<ctr_msgs::srv::Inforequest::Request>();
+  auto request = std::make_shared<ctr_msgs::srv::Idrequest::Request>();
   request->group = _group;
 
   // Wait for service:
@@ -68,7 +68,7 @@ QList<qint8> InfoBus::ourPlayers() const {
 }
 
 QList<qint8> InfoBus::theirPlayers() const {
-  auto request = std::make_shared<ctr_msgs::srv::Inforequest::Request>();
+  auto request = std::make_shared<ctr_msgs::srv::Idrequest::Request>();
   QList<qint8> ret;
   if(_group == Groups::BLUE) {
     request->group = Groups::YELLOW;

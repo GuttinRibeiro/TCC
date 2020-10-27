@@ -86,7 +86,7 @@ endif()
 # Build controller
 add_executable(ssl_controller src/ssl_robot_ctr.cpp src/utils/entity.cpp src/controller/controller.cpp
     src/utils/vector.cpp src/controller/ssl_controller.cpp
-    src/utils/utils.cpp src/controller/infobus.cpp)
+    src/utils/utils.cpp src/utils/infobus.cpp)
 ament_target_dependencies(ssl_controller rclcpp ctr_msgs)
 
 target_link_libraries(ssl_controller ${libs})
@@ -96,7 +96,7 @@ endif()
 
 # Build navigation
 add_executable(ssl_navigation src/ssl_nav_node.cpp src/utils/entity.cpp src/navigation/navigation.cpp
-    src/utils/vector.cpp src/utils/utils.cpp src/controller/infobus.cpp
+    src/utils/vector.cpp src/utils/utils.cpp src/utils/infobus.cpp
     src/navigation/navalg/navigation_algorithm.cpp src/navigation/navalg/pf.cpp
     src/navigation/ctralg/control_algorithm.cpp src/navigation/ctralg/discrete_pid.cpp)
 ament_target_dependencies(ssl_navigation rclcpp rclcpp ctr_msgs)

@@ -40,7 +40,7 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
                                                                  path_opt);
 
   // Information services
-  _infoService = this->create_service<ctr_msgs::srv::Inforequest>("map_service/"+robotToken+"/info",
+  _infoService = this->create_service<ctr_msgs::srv::Idrequest>("map_service/"+robotToken+"/id",
                                                                   std::bind(&Map_Node::getInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                   rmw_qos_profile_services_default,
                                                                   _callback_information_services);
@@ -108,8 +108,8 @@ void Map_Node::run() {
 }
 
 void Map_Node::getInformation(const std::shared_ptr<rmw_request_id_t> request_header,
-                              const std::shared_ptr<ctr_msgs::srv::Inforequest::Request> request,
-                              const std::shared_ptr<ctr_msgs::srv::Inforequest::Response> response) {
+                              const std::shared_ptr<ctr_msgs::srv::Idrequest::Request> request,
+                              const std::shared_ptr<ctr_msgs::srv::Idrequest::Response> response) {
   (void) request_header;
   QList<qint8> ids = _wm->getGroup(request->group).keys();
   for(int i = 0; i < ids.size(); i++) {
