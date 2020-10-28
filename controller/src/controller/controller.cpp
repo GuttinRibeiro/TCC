@@ -116,3 +116,7 @@ void Controller::lookTo(Vector posToLook) {
   float orientation = Utils::wrapToTwoPi(Utils::getAngle(direction));
   _pubNavigation->publish(encodeNavMessage(myPos, orientation, false, false, false));
 }
+
+void Controller::nextState(std::string nextStateName) {
+
+}

@@ -15,6 +15,8 @@
 #include "../utils/entity.hpp"
 #include "../utils/infobus.hpp"
 
+class State;
+
 class Controller : public rclcpp::Node, public Entity {
   private:
     rclcpp::CallbackGroup::SharedPtr _callback_group_actuator;
@@ -30,7 +32,7 @@ class Controller : public rclcpp::Node, public Entity {
     rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _clientFieldRequest;
 
     InfoBus *_ib;
-
+    State *_current;
   protected:
     qint8 _id;
     std::string _team;
@@ -49,6 +51,7 @@ class Controller : public rclcpp::Node, public Entity {
   public:
     Controller(std::string team, int id, int frequency = 60);
     ~Controller();
+    void nextState(std::string nextStateName);
 };
 
 #endif // CONTROLLER_HPP
