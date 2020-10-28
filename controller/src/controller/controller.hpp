@@ -32,10 +32,13 @@ class Controller : public rclcpp::Node, public Entity {
     rclcpp::Client<ctr_msgs::srv::Fieldinformationrequest>::SharedPtr _clientFieldRequest;
 
     InfoBus *_ib;
-    State *_current;
+    bool _holdBall;
+    float _kickSpeedY;
+    float _kickSpeedZ;
   protected:
     qint8 _id;
     std::string _team;
+    State *_current;
 
     virtual void updateState(ctr_msgs::msg::State::SharedPtr msg) = 0;
 
@@ -43,15 +46,18 @@ class Controller : public rclcpp::Node, public Entity {
     virtual void configure() {return;}
     virtual std::string name() {return "Controller";}
     virtual ctr_msgs::msg::Navigation encodeNavMessage(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) = 0;
-    void goToLookTo(Vector destination, Vector posToLook, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
-    void goTo(Vector destination, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
-    void lookTo(Vector posToLook);
     void send_command(const ctr_msgs::msg::Command &msg);
-    InfoBus* infoBus() const {return _ib;}
   public:
     Controller(std::string team, int id, int frequency = 60);
     ~Controller();
-    void nextState(std::string nextStateName);
+    virtual void nextState(int nextStateName) = 0;
+    void goToLookTo(Vector destination, Vector posToLook, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
+    void goTo(Vector destination, bool avoidBall = false, bool avoidAllies = true, bool avoidEnemies = true);
+    void lookTo(Vector posToLook);
+    void kick(float kickPower = 8.0f);
+    void holdBall(bool turnOn = false);
+    void chipkick(float kickPower = 8.0f, float kickAngle = 0.0f);
+    InfoBus* infoBus() const {return _ib;}
 };
 
 #endif // CONTROLLER_HPP

@@ -1,23 +1,21 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
-#include "../utils/entity.hpp"
 #include "controller.hpp"
 #include <string>
 
-class State : public Entity {
+class State {
 private:
   Controller *_ctr;
 
 protected:
-  virtual void run() {return;}
-  virtual void configure() {return;}
-  virtual std::string name() {return "State";}
-
+  Controller * ctrAccess() const {return _ctr;}
 public:
-  virtual std::string nextState() = 0;
-  State(Controller *ctr, int frequency = 60);
+  virtual int nextState() = 0;
+  State(Controller *ctr);
+  virtual ~State();
   void goNext();
+  virtual void runState() = 0;
 };
 
 #endif // STATE_HPP

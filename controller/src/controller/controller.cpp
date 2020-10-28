@@ -1,5 +1,6 @@
 #include "controller.hpp"
 #include "../utils/utils.hpp"
+#define KICK_PRECISION 0.01
 
 using namespace std::chrono_literals;
 
@@ -19,6 +20,9 @@ Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("
   // Internal
   _team = team;
   _id = (qint8) id;
+  _holdBall = false;
+  _kickSpeedY = 0.0;
+  _kickSpeedZ = 0.0;
 
   std::string robotToken = team+"_"+std::to_string(id);
 
@@ -117,6 +121,42 @@ void Controller::lookTo(Vector posToLook) {
   _pubNavigation->publish(encodeNavMessage(myPos, orientation, false, false, false));
 }
 
-void Controller::nextState(std::string nextStateName) {
+void Controller::kick(float kickPower) {
+  if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION) {
+    _kickSpeedY = kickPower;
+    _kickSpeedZ = 0.0;
+    ctr_msgs::msg::Command cmd;
+    cmd.haskickinformation = true;
+    cmd.hasholdballinformation = false;
+    cmd.kickspeedz = 0.0;
+    cmd.kickspeedy = kickPower;
+    cmd.header.stamp = this->get_clock()->now();
+    send_command(cmd);
+  }
+}
 
+void Controller::chipkick(float kickPower, float kickAngle) {
+  if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION || fabs(_kickSpeedZ-kickPower) > KICK_PRECISION) {
+    _kickSpeedY = kickPower*cos(kickAngle);
+    _kickSpeedZ = kickPower*sin(kickAngle);
+    ctr_msgs::msg::Command cmd;
+    cmd.haskickinformation = true;
+    cmd.hasholdballinformation = false;
+    cmd.kickspeedz = _kickSpeedZ;
+    cmd.kickspeedy = _kickSpeedY;
+    cmd.header.stamp = this->get_clock()->now();
+    send_command(cmd);
+  }
+}
+
+void Controller::holdBall(bool turnOn) {
+  if(turnOn != _holdBall) {
+    _holdBall = turnOn;
+    ctr_msgs::msg::Command cmd;
+    cmd.haskickinformation = false;
+    cmd.hasholdballinformation = true;
+    cmd.holdball = turnOn;
+    cmd.header.stamp = this->get_clock()->now();
+    send_command(cmd);
+  }
 }

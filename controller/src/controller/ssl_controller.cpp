@@ -6,12 +6,9 @@
 #include "../utils/utils.hpp"
 #include <ctime>
 #include "ctr_msgs/msg/command.hpp"
-#define KICK_PRECISION 0.01
 
 SSL_Controller::SSL_Controller(std::string team, int id, int frequency) : Controller (team, id, frequency) {
-  _holdBall = false;
-  _kickSpeedY = 0.0;
-  _kickSpeedZ = 0.0;
+  _current = new State_Halt(this);
 }
 
 SSL_Controller::~SSL_Controller() {
@@ -20,6 +17,21 @@ SSL_Controller::~SSL_Controller() {
 
 void SSL_Controller::updateState(ctr_msgs::msg::State::SharedPtr msg) {
   std::cout << "[SSL Controller] New state: " << msg->state << "\n";
+  bool gameOn = (msg->state == "FORCESTART" || msg->state == "NORMALSTART");
+  if(msg->isgk && gameOn) {
+    nextState(States::GK);
+    std::cout << "State gk\n";
+    return;
+  }
+
+  if(gameOn) {
+    nextState(States::ATK);
+    std::cout << "State atk\n";
+    return;
+  }
+
+  nextState(States::HALT);
+  std::cout << "State halt\n";
 }
 
 void SSL_Controller::configure() {
@@ -28,48 +40,7 @@ void SSL_Controller::configure() {
 
 void SSL_Controller::run() {
 //  std::cout << "SSL Controller running!\n";
-  kick(1.0f);
-  goToLookTo(infoBus()->ourGoal(), infoBus()->ourFieldRightCorner());
-}
-
-void SSL_Controller::kick(float kickPower) {
-  if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION) {
-    _kickSpeedY = kickPower;
-    _kickSpeedZ = 0.0;
-    ctr_msgs::msg::Command cmd;
-    cmd.haskickinformation = true;
-    cmd.hasholdballinformation = false;
-    cmd.kickspeedz = 0.0;
-    cmd.kickspeedy = kickPower;
-    cmd.header.stamp = this->get_clock()->now();
-    send_command(cmd);
-  }
-}
-
-void SSL_Controller::chipkick(float kickPower, float kickAngle) {
-  if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION || fabs(_kickSpeedZ-kickPower) > KICK_PRECISION) {
-    _kickSpeedY = kickPower*cos(kickAngle);
-    _kickSpeedZ = kickPower*sin(kickAngle);
-    ctr_msgs::msg::Command cmd;
-    cmd.haskickinformation = true;
-    cmd.hasholdballinformation = false;
-    cmd.kickspeedz = _kickSpeedZ;
-    cmd.kickspeedy = _kickSpeedY;
-    cmd.header.stamp = this->get_clock()->now();
-    send_command(cmd);
-  }
-}
-
-void SSL_Controller::holdBall(bool turnOn) {
-  if(turnOn != _holdBall) {
-    _holdBall = turnOn;
-    ctr_msgs::msg::Command cmd;
-    cmd.haskickinformation = false;
-    cmd.hasholdballinformation = true;
-    cmd.holdball = turnOn;
-    cmd.header.stamp = this->get_clock()->now();
-    send_command(cmd);
-  }
+  _current->runState();
 }
 
 ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
@@ -86,4 +57,21 @@ ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, f
   ret.avoidenemies = avoidEnemies;
   ret.header.stamp = this->get_clock()->now();
   return ret;
+}
+
+void SSL_Controller::nextState(int nextStateName) {
+  State *oldState = _current;
+
+  switch (nextStateName) {
+  case States::HALT : {
+    _current = new State_Halt(this);
+    break;
+  }
+
+  default:
+    _current = new State_Halt(this);
+  }
+
+
+  delete oldState;
 }

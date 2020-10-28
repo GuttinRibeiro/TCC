@@ -86,7 +86,9 @@ endif()
 # Build controller
 add_executable(ssl_controller src/ssl_robot_ctr.cpp src/utils/entity.cpp src/controller/controller.cpp
     src/utils/vector.cpp src/controller/ssl_controller.cpp
-    src/utils/utils.cpp src/utils/infobus.cpp src/controller/state.cpp)
+    src/utils/utils.cpp src/utils/infobus.cpp
+    src/controller/state.cpp
+    src/controller/state_halt.cpp)
 ament_target_dependencies(ssl_controller rclcpp ctr_msgs)
 
 target_link_libraries(ssl_controller ${libs})
