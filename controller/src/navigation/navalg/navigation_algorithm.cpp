@@ -18,7 +18,7 @@ Navigation_Algorithm::Navigation_Algorithm(InfoBus *ib, qint8 id, int frequency)
   _ourGroup = _ib->ourGroup();
   _theirGroup = _ib->theirGroup();
   _path.clear();
-  _mutex.unlock();
+//  _mutex.unlock();
   // Start this entity's thread
   this->start();
 }
@@ -48,9 +48,9 @@ void Navigation_Algorithm::setDestination(Vector destination) {
 
 QLinkedList<Vector> Navigation_Algorithm::path() {
   QLinkedList<Vector> ret;
-  _mutex.lock();
+//  _mutex.lock();
   ret = _path;
-  _mutex.unlock();
+//  _mutex.unlock();
   return ret;
 }
 
@@ -59,9 +59,9 @@ Navigation_Algorithm::~Navigation_Algorithm() {
 }
 
 void Navigation_Algorithm::ignoreObstacles() {
-  _mutex.lock();
+//  _mutex.lock();
   _obstacles.clear();
-  _mutex.unlock();
+//  _mutex.unlock();
 }
 
 void Navigation_Algorithm::avoidAll() {
@@ -70,7 +70,7 @@ void Navigation_Algorithm::avoidAll() {
   if(ids.contains(_id)) {
     ids.removeAll(_id);
   }
-  _mutex.lock();
+//  _mutex.lock();
   for(quint8 i = 0; i < ids.size(); i++) {
     _obstacles.insert(std::make_pair(_ourGroup, ids.at(i)), _ib->robotPosition(_ourGroup, ids.at(i)));
   }
@@ -86,22 +86,22 @@ void Navigation_Algorithm::avoidAll() {
   if(ballPos.isUnknown() == false) {
     _obstacles.insert(std::make_pair(Groups::BALL, 0), _ib->robotPosition(Groups::BALL, 0));
   }
-  _mutex.unlock();
+//  _mutex.unlock();
 }
 
 void Navigation_Algorithm::avoidBall(bool turnOn) {
   if(turnOn) {
     Vector ballPos = _ib->ballPosition();
     if(ballPos.isUnknown() == false) {
-      _mutex.lock();
+//      _mutex.lock();
       _obstacles.insert(std::make_pair(Groups::BALL, 0), ballPos);
-      _mutex.unlock();
+//      _mutex.unlock();
     }
   } else {
     if(_obstacles.contains(std::make_pair(Groups::BALL, 0))) {
-      _mutex.lock();
+//      _mutex.lock();
       _obstacles.remove(std::make_pair(Groups::BALL, 0));
-      _mutex.unlock();
+//      _mutex.unlock();
     }
   }
 }
@@ -109,14 +109,14 @@ void Navigation_Algorithm::avoidBall(bool turnOn) {
 void Navigation_Algorithm::removeRobotsFromObstacles(int group) {
   if(group == Groups::BLUE || group == Groups::YELLOW) {
     std::pair<int, qint8> key;
-    _mutex.lock();
+//    _mutex.lock();
     for(quint8 i = 0; i < MAX_NUM_ROBOTS; i++) {
       key = std::make_pair(group, i);
       if(_obstacles.contains(key)) {
         _obstacles.remove(key);
       }
     }
-    _mutex.unlock();
+//    _mutex.unlock();
     return;
   }
 
@@ -135,7 +135,7 @@ void Navigation_Algorithm::avoidRobots(bool turnOn) {
     if(ids.contains(_id)) {
       ids.removeAll(_id);
     }
-    _mutex.lock();
+//    _mutex.lock();
     for(quint8 i = 0; i < ids.size(); i++) {
       _obstacles.insert(std::make_pair(_ourGroup, ids.at(i)), _ib->robotPosition(_ourGroup, ids.at(i)));
     }
@@ -145,7 +145,7 @@ void Navigation_Algorithm::avoidRobots(bool turnOn) {
     for(quint8 i = 0; i < ids.size(); i++) {
       _obstacles.insert(std::make_pair(_theirGroup, ids.at(i)), _ib->robotPosition(_theirGroup, ids.at(i)));
     }
-    _mutex.unlock();
+//    _mutex.unlock();
   }
 }
 
@@ -158,11 +158,11 @@ void Navigation_Algorithm::avoidAllies(bool turnOn) {
     if(ids.contains(_id)) {
       ids.removeAll(_id);
     }
-    _mutex.lock();
+//    _mutex.lock();
     for(quint8 i = 0; i < ids.size(); i++) {
       _obstacles.insert(std::make_pair(_ourGroup, ids.at(i)), _ib->robotPosition(_ourGroup, ids.at(i)));
     }
-    _mutex.unlock();
+//    _mutex.unlock();
   }
 }
 
@@ -172,11 +172,11 @@ void Navigation_Algorithm::avoidEnemies(bool turnOn) {
   if(turnOn) {
     // Get all visible players of their team
     QList<qint8> ids = _ib->theirPlayers();
-    _mutex.lock();
+//    _mutex.lock();
     for(quint8 i = 0; i < ids.size(); i++) {
       _obstacles.insert(std::make_pair(_theirGroup, ids.at(i)), _ib->robotPosition(_theirGroup, ids.at(i)));
     }
-    _mutex.unlock();
+//    _mutex.unlock();
   }
 }
 
@@ -185,7 +185,7 @@ void Navigation_Algorithm::run() {
   _myPosition = _ib->myPosition();
   _myOrientation = _ib->myOrientation();
 
-  _mutex.lock();
+//  _mutex.lock();
   // Check if a new path should be calculated
   if(_newDesiredState) {
     _path = calculatePath(_myPosition, _myOrientation, _path, _obstacles.values(), _destination, _orientation);
@@ -198,5 +198,5 @@ void Navigation_Algorithm::run() {
       _path = calculatePath(_myPosition, _myOrientation, _path, _obstacles.values(), _destination, _orientation);
     }
   }
-  _mutex.unlock();
+//  _mutex.unlock();
 }

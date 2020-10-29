@@ -68,6 +68,11 @@ void SSL_Controller::nextState(int nextStateName) {
     break;
   }
 
+  case States::GK : {
+    _current = new State_GK(this);
+    break;
+  }
+
   default:
     _current = new State_Halt(this);
   }

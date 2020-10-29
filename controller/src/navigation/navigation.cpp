@@ -64,7 +64,7 @@ Navigation::Navigation(std::string team, int id, int frequency) : rclcpp::Node("
   _maxLinearAcceleration = 0.8;
   _lastLinSpeed = 0.0;
   _lastAngSpeed = 0.0;
-  _mutex.unlock();
+//  _mutex.unlock();
   this->start();
 }
 
@@ -94,6 +94,7 @@ void Navigation::sendVelocity(float vx, float vy, float vang) {
   message.vang = vang;
   message.header.stamp = this->get_clock()->now();
   _pubActuator->publish(message);
+//  std::cout << "Velocity sent!\n";
 }
 
 void Navigation::configure() {
@@ -157,7 +158,7 @@ void Navigation::run() {
     return;
   }
 
-  _mutex.lock();
+//  _mutex.lock();
   timespec start, stop;
   clock_gettime(CLOCK_REALTIME, &start);
   _navAlg->setDestination(_destination);
@@ -198,7 +199,7 @@ void Navigation::run() {
 //  std::cout << "[Navigation] Omega: " << desiredAngSpeed << "\n";
 //  std::cout << "[Navigation] LinearError: " << linearError << "\n";
 //  std::cout << "[Navigation] Desired linear speed: " << desiredSpeed << "\n";
-  _mutex.unlock();
+//  _mutex.unlock();
   // Apply constraints to get a feasible desired speed:
   // Linear speed:
   desiredSpeed = calculateConstrainedSpeed(desiredSpeed, _lastLinSpeed, 0.0, _maxLinearSpeed, _maxLinearAcceleration, elapsed);
@@ -222,9 +223,9 @@ rcl_interfaces::msg::SetParametersResult Navigation::paramCallback(const std::ve
         result.successful = false;
         result.reason = "'" + parameter.get_name() + "' not defined before";
       } else {
-        _mutex.lock();
+//        _mutex.lock();
         *address = parameter.as_double();
-        _mutex.unlock();
+//        _mutex.unlock();
         std::cout << "[Navigation] Parameter " + parameter.get_name() + " updated\n";
       }
     } else {

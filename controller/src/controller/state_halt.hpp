@@ -3,7 +3,6 @@
 
 #include "state.hpp"
 #include "../utils/states.hpp"
-#include <string>
 
 class State_Halt : public State {
 public:

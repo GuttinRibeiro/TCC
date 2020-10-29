@@ -4,7 +4,7 @@
 
 Control_Algorithm::Control_Algorithm(std::string name) {
   _name = name;
-  _mutex.unlock();
+//  _mutex.unlock();
 }
 
 Control_Algorithm::~Control_Algorithm() {
@@ -15,15 +15,15 @@ bool Control_Algorithm::declareDoubleParameter(std::string variableName, double 
   if(paramAddress == nullptr) {
     return false;
   }
-  _mutex.lock();
+//  _mutex.lock();
   _paramTable.insert(variableName, std::make_pair(paramAddress, defaultValue));
-  _mutex.unlock();
+//  _mutex.unlock();
   return true;
 }
 
 QMap<std::string, std::pair<double *, double> > Control_Algorithm::getParamTable() {
-  _mutex.lock();
+//  _mutex.lock();
   QMap<std::string, std::pair<double *, double>> ret = _paramTable;
-  _mutex.unlock();
+//  _mutex.unlock();
   return ret;
 }

@@ -3,6 +3,7 @@
 
 #include "controller.hpp"
 #include "state_halt.hpp"
+#include "state_gk.hpp"
 
 class SSL_Controller : public Controller {
 private:
