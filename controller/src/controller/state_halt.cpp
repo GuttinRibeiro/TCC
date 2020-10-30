@@ -1,11 +1,11 @@
 #include "state_halt.hpp"
 
-State_Halt::State_Halt(Controller *ctr) : State(ctr){
+State_Halt::State_Halt(BehavioralNode *bh) : State(bh){
 
 }
 
 void State_Halt::runState() {
-  ctrAccess()->goTo(ctrAccess()->infoBus()->myPosition());
+  bhAccess()->goTo(bhAccess()->infoBus()->myPosition());
 }
 
 int State_Halt::nextState() {

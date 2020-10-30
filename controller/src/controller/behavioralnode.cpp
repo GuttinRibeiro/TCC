@@ -1,4 +1,4 @@
-#include "controller.hpp"
+#include "behavioralnode.hpp"
 #include "../utils/utils.hpp"
 #define KICK_PRECISION 0.01
 
@@ -16,7 +16,7 @@ static const rmw_qos_profile_t rmw_qos_custom_profile {
     false
 };
 
-Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("controller_"+team+"_"+std::to_string(id)), Entity (frequency) {
+BehavioralNode::BehavioralNode(std::string team, int id, int frequency) : rclcpp::Node("BehavioralNode_"+team+"_"+std::to_string(id)), Entity (frequency) {
   // Internal
   _team = team;
   _id = (qint8) id;
@@ -53,7 +53,7 @@ Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("
   ea_opt.topic_stats_options.publish_topic = "external_agent/state/"+robotToken+"/statistics";
   _subExternalAgent = this->create_subscription<ctr_msgs::msg::State>("external_agent/state/"+robotToken,
                                                                       rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_custom_profile.history, rmw_qos_custom_profile.depth), rmw_qos_custom_profile),
-                                                                      std::bind(&Controller::updateState, this, std::placeholders::_1),
+                                                                      std::bind(&BehavioralNode::updateState, this, std::placeholders::_1),
                                                                       ea_opt);
 
   // Map
@@ -76,22 +76,22 @@ Controller::Controller(std::string team, int id, int frequency) : rclcpp::Node("
   this->start();
 }
 
-Controller::~Controller() {
+BehavioralNode::~BehavioralNode() {
   delete _ib;
 }
 
-void Controller::send_command(const ctr_msgs::msg::Command &msg) {
+void BehavioralNode::send_command(const ctr_msgs::msg::Command &msg) {
   _pubActuator->publish(msg);
 }
 
-void Controller::goToLookTo(Vector destination, Vector posToLook, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
+void BehavioralNode::goToLookTo(Vector destination, Vector posToLook, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   if(destination.isUnknown()) {
-    std::cout << "[Controller] Desired destination is unknown!\n";
+    std::cout << "[BehavioralNode] Desired destination is unknown!\n";
     return;
   }
 
   if(posToLook.isUnknown()) {
-    std::cout << "[Controller] posToLook is unknown!\n";
+    std::cout << "[BehavioralNode] posToLook is unknown!\n";
     return;
   }
 
@@ -100,9 +100,9 @@ void Controller::goToLookTo(Vector destination, Vector posToLook, bool avoidBall
   _pubNavigation->publish(encodeNavMessage(destination, orientation, avoidBall, avoidAllies, avoidEnemies));
 }
 
-void Controller::goTo(Vector destination, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
+void BehavioralNode::goTo(Vector destination, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   if(destination.isUnknown()) {
-    std::cout << "[Controller] Desired destination is unknown!\n";
+    std::cout << "[BehavioralNode] Desired destination is unknown!\n";
     return;
   }
 
@@ -110,9 +110,9 @@ void Controller::goTo(Vector destination, bool avoidBall, bool avoidAllies, bool
   _pubNavigation->publish(encodeNavMessage(destination, orientation, avoidBall, avoidAllies, avoidEnemies));
 }
 
-void Controller::lookTo(Vector posToLook) {
+void BehavioralNode::lookTo(Vector posToLook) {
   if(posToLook.isUnknown()) {
-    std::cout << "[Controller] posToLook is unknown!\n";
+    std::cout << "[BehavioralNode] posToLook is unknown!\n";
     return;
   }
   Vector myPos = _ib->myPosition();
@@ -121,7 +121,7 @@ void Controller::lookTo(Vector posToLook) {
   _pubNavigation->publish(encodeNavMessage(myPos, orientation, false, false, false));
 }
 
-void Controller::kick(float kickPower) {
+void BehavioralNode::kick(float kickPower) {
   if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION) {
     _kickSpeedY = kickPower;
     _kickSpeedZ = 0.0;
@@ -135,7 +135,7 @@ void Controller::kick(float kickPower) {
   }
 }
 
-void Controller::chipkick(float kickPower, float kickAngle) {
+void BehavioralNode::chipkick(float kickPower, float kickAngle) {
   if(fabs(_kickSpeedY-kickPower) > KICK_PRECISION || fabs(_kickSpeedZ-kickPower) > KICK_PRECISION) {
     _kickSpeedY = kickPower*cos(kickAngle);
     _kickSpeedZ = kickPower*sin(kickAngle);
@@ -149,7 +149,7 @@ void Controller::chipkick(float kickPower, float kickAngle) {
   }
 }
 
-void Controller::holdBall(bool turnOn) {
+void BehavioralNode::holdBall(bool turnOn) {
   if(turnOn != _holdBall) {
     _holdBall = turnOn;
     ctr_msgs::msg::Command cmd;

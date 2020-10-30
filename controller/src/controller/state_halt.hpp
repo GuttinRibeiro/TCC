@@ -6,7 +6,7 @@
 
 class State_Halt : public State {
 public:
-  State_Halt(Controller *ctr);
+  State_Halt(BehavioralNode *bh);
   ~State_Halt();
   int nextState();
   void runState();

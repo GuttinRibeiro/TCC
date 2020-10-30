@@ -84,17 +84,17 @@ if(USE_QT5)
 endif()
 
 # Build controller
-add_executable(ssl_controller src/ssl_robot_ctr.cpp src/utils/entity.cpp src/controller/controller.cpp
-    src/utils/vector.cpp src/controller/ssl_controller.cpp
+add_executable(ssl_bh_node src/ssl_robot_ctr.cpp src/utils/entity.cpp src/controller/behavioralnode.cpp
+    src/utils/vector.cpp src/controller/ssl_behavioralnode.cpp
     src/utils/utils.cpp src/utils/infobus.cpp
     src/controller/state.cpp
     src/controller/state_halt.cpp
     src/controller/state_gk.cpp)
-ament_target_dependencies(ssl_controller rclcpp ctr_msgs)
+ament_target_dependencies(ssl_bh_node rclcpp ctr_msgs)
 
-target_link_libraries(ssl_controller ${libs})
+target_link_libraries(ssl_bh_node ${libs})
 if(USE_QT5)
-        qt5_use_modules(ssl_controller Widgets)
+        qt5_use_modules(ssl_bh_node Widgets)
 endif()
 
 # Build navigation
@@ -110,7 +110,7 @@ if(USE_QT5)
 endif()
 
 # Install
-install(TARGETS worldmap ssl_controller ssl_navigation
+install(TARGETS worldmap ssl_bh_node ssl_navigation
   EXPORT export_${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
 

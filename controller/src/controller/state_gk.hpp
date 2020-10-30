@@ -6,7 +6,7 @@
 
 class State_GK : public State {
 public:
-  State_GK(Controller *ctr);
+  State_GK(BehavioralNode *bh);
   ~State_GK();
   int nextState();
   void runState();

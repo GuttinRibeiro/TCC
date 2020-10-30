@@ -1,6 +1,6 @@
 #include "state_gk.hpp"
 
-State_GK::State_GK(Controller *ctr) : State (ctr){
+State_GK::State_GK(BehavioralNode *bh) : State (bh){
 
 }
 
@@ -9,7 +9,7 @@ int State_GK::nextState() {
 }
 
 void State_GK::runState() {
-  ctrAccess()->goToLookTo(ctrAccess()->infoBus()->ourGoal(), ctrAccess()->infoBus()->ballPosition());
+  bhAccess()->goToLookTo(bhAccess()->infoBus()->ourGoal(), bhAccess()->infoBus()->theirGoal());
 }
 
 State_GK::~State_GK() {

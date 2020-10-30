@@ -1,7 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <QtCore>
 #include <iostream>
-#include "controller/ssl_controller.hpp"
+#include "controller/ssl_behavioralnode.hpp"
 #include "utils/fields/field_ssl2019.hpp"
 
 int main(int argc, char **argv) {
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   // ROS 2
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor executor;
-  auto ctr_node = std::make_shared<SSL_Controller>(team, id);
+  auto ctr_node = std::make_shared<SSL_BehavioralNode>(team, id);
   executor.add_node(ctr_node);
   executor.spin();
   rclcpp::shutdown();

@@ -1,4 +1,4 @@
-#include "ssl_controller.hpp"
+#include "ssl_behavioralnode.hpp"
 #include <string>
 #include "../utils/field.hpp"
 #include <cmath>
@@ -7,15 +7,15 @@
 #include <ctime>
 #include "ctr_msgs/msg/command.hpp"
 
-SSL_Controller::SSL_Controller(std::string team, int id, int frequency) : Controller (team, id, frequency) {
+SSL_BehavioralNode::SSL_BehavioralNode(std::string team, int id, int frequency) : BehavioralNode (team, id, frequency) {
   _current = new State_Halt(this);
 }
 
-SSL_Controller::~SSL_Controller() {
-
+SSL_BehavioralNode::~SSL_BehavioralNode() {
+  delete _current;
 }
 
-void SSL_Controller::updateState(ctr_msgs::msg::State::SharedPtr msg) {
+void SSL_BehavioralNode::updateState(ctr_msgs::msg::State::SharedPtr msg) {
   std::cout << "[SSL Controller] New state: " << msg->state << "\n";
   bool gameOn = (msg->state == "FORCESTART" || msg->state == "NORMALSTART");
   if(msg->isgk && gameOn) {
@@ -34,16 +34,16 @@ void SSL_Controller::updateState(ctr_msgs::msg::State::SharedPtr msg) {
   std::cout << "State halt\n";
 }
 
-void SSL_Controller::configure() {
+void SSL_BehavioralNode::configure() {
   std::cout << "SSL controller was configured!\n";
 }
 
-void SSL_Controller::run() {
+void SSL_BehavioralNode::run() {
 //  std::cout << "SSL Controller running!\n";
   _current->runState();
 }
 
-ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
+ctr_msgs::msg::Navigation SSL_BehavioralNode::encodeNavMessage(Vector destination, float orientation, bool avoidBall, bool avoidAllies, bool avoidEnemies) {
   ctr_msgs::msg::Position desiredPos;
   desiredPos.isvalid = true;
   desiredPos.x = destination.x();
@@ -59,7 +59,7 @@ ctr_msgs::msg::Navigation SSL_Controller::encodeNavMessage(Vector destination, f
   return ret;
 }
 
-void SSL_Controller::nextState(int nextStateName) {
+void SSL_BehavioralNode::nextState(int nextStateName) {
   State *oldState = _current;
 
   switch (nextStateName) {

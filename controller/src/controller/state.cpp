@@ -1,15 +1,15 @@
 #include "state.hpp"
 
-State::State(Controller *ctr){
-  if(ctr != nullptr) {
-    _ctr = ctr;
+State::State(BehavioralNode *bh){
+  if(bh != nullptr) {
+    _bh = bh;
   }
 }
 
 void State::goNext() {
-  _ctr->nextState(this->nextState());
+  _bh->nextState(this->nextState());
 }
 
 State::~State() {
-  _ctr = nullptr;
+  _bh = nullptr;
 }

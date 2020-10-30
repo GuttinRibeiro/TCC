@@ -1,18 +1,18 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
-#include "controller.hpp"
+#include "behavioralnode.hpp"
 #include <string>
 
 class State {
 private:
-  Controller *_ctr;
+  BehavioralNode *_bh;
 
 protected:
-  Controller * ctrAccess() const {return _ctr;}
+  BehavioralNode * bhAccess() const {return _bh;}
 public:
   virtual int nextState() = 0;
-  State(Controller *ctr);
+  State(BehavioralNode *bh);
   virtual ~State();
   void goNext();
   virtual void runState() = 0;
