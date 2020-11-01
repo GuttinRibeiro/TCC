@@ -13,9 +13,10 @@ private:
   std::string name() {return "SSL_BehavioralNode";}
   ctr_msgs::msg::Navigation encodeNavMessage(Vector destination, float orientation,
                                              bool avoidBall, bool avoidAllies, bool avoidEnemies);
+  int stringStateToInt(const std::string &state);
 
 public:
-  SSL_BehavioralNode(std::string team, int id, int frequency = 60);
+  SSL_BehavioralNode(std::string team, int id, QList<int> teamIds, int frequency = 60);
   ~SSL_BehavioralNode();
   void nextState(int nextStateName);
 };

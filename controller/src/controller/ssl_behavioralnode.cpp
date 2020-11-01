@@ -7,7 +7,7 @@
 #include <ctime>
 #include "ctr_msgs/msg/command.hpp"
 
-SSL_BehavioralNode::SSL_BehavioralNode(std::string team, int id, int frequency) : BehavioralNode (team, id, frequency) {
+SSL_BehavioralNode::SSL_BehavioralNode(std::string team, int id, QList<int> teamIds, int frequency) : BehavioralNode (team, id, teamIds, frequency) {
   _current = new State_Halt(this);
 }
 
@@ -61,22 +61,45 @@ ctr_msgs::msg::Navigation SSL_BehavioralNode::encodeNavMessage(Vector destinatio
 
 void SSL_BehavioralNode::nextState(int nextStateName) {
   State *oldState = _current;
+  ctr_msgs::msg::State msg;
 
   switch (nextStateName) {
   case States::HALT : {
     _current = new State_Halt(this);
+    msg.isgk = false;
+    msg.state = "HALT";
     break;
   }
 
   case States::GK : {
     _current = new State_GK(this);
+    msg.isgk = true;
+    msg.state = "GK";
     break;
   }
 
   default:
+    msg.isgk = false;
+    msg.state = "HALT";
+
     _current = new State_Halt(this);
   }
 
-
+  msg.team = _team;
+  msg.id = _id;
+  msg.header.stamp = this->get_clock()->now();
+  publish_mystate(msg);
   delete oldState;
+}
+
+int SSL_BehavioralNode::stringStateToInt(const std::string &state) {
+  if(state == "HALT") {
+    return States::HALT;
+  }
+
+  if(state == "GK") {
+    return States::GK;
+  }
+
+  return States::UNDEFINED;
 }

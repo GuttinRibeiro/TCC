@@ -6,6 +6,7 @@ enum States {
   GK,
   AUX,
   ATK,
+  UNDEFINED
 };
 
 #endif // STATES_HPP

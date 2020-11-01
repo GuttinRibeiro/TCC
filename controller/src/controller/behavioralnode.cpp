@@ -16,23 +16,46 @@ static const rmw_qos_profile_t rmw_qos_custom_profile {
     false
 };
 
-BehavioralNode::BehavioralNode(std::string team, int id, int frequency) : rclcpp::Node("BehavioralNode_"+team+"_"+std::to_string(id)), Entity (frequency) {
+BehavioralNode::BehavioralNode(std::string team, int id, QList<int> teamIds, int frequency) : rclcpp::Node("BehavioralNode_"+team+"_"+std::to_string(id)), Entity (frequency) {
   // Internal
   _team = team;
-  _id = (qint8) id;
+  _id = static_cast<qint8>(id);
   _holdBall = false;
   _kickSpeedY = 0.0;
   _kickSpeedZ = 0.0;
+  _teamIDs = teamIds;
 
   std::string robotToken = team+"_"+std::to_string(id);
 
   // Create callback groups for multi-threading execution
   _callback_group_actuator = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
   _callback_group_navigation = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-  _callback_group_external_agent = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  _callback_group_states = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   _callback_group_map = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
-  // Initialize ROS 2 interaces
+  // Initialize ROS 2 interfaces
+  // My state
+  auto state_opt = rclcpp::PublisherOptions();
+  state_opt.callback_group = _callback_group_states;
+  _pubState = this->create_publisher<ctr_msgs::msg::State>("behavioral_node/"+robotToken+"/mystate",
+                                                           rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_custom_profile.history, rmw_qos_custom_profile.depth), rmw_qos_custom_profile),
+                                                           state_opt);
+  // Subscribe to the state topic of all other robots
+  auto hearing_state_opt = rclcpp::SubscriptionOptions();
+  hearing_state_opt.callback_group = _callback_group_states;
+  for(int id : teamIds) {
+    id = static_cast<qint8>(id);
+    if(id != _id) {
+      std::string token = team+"_"+std::to_string(id);
+      rclcpp::Subscription<ctr_msgs::msg::State>::SharedPtr subs = this->create_subscription<ctr_msgs::msg::State>("behavioral_node/"+token+"/mystate",
+                                                                                             rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_custom_profile.history, rmw_qos_custom_profile.depth), rmw_qos_custom_profile),
+                                                                                             std::bind(&BehavioralNode::hearState, this, std::placeholders::_1),
+                                                                                             hearing_state_opt);
+      _subStateTable.insert(id, subs);
+    }
+
+  }
+
   // Actuator
   auto act_opt = rclcpp::PublisherOptions();
   act_opt.callback_group = _callback_group_actuator;
@@ -48,7 +71,7 @@ BehavioralNode::BehavioralNode(std::string team, int id, int frequency) : rclcpp
                                                                      nav_opt);
   // External Agent
   auto ea_opt = rclcpp::SubscriptionOptions();
-  ea_opt.callback_group = _callback_group_external_agent;
+  ea_opt.callback_group = _callback_group_states;
   ea_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
   ea_opt.topic_stats_options.publish_topic = "external_agent/state/"+robotToken+"/statistics";
   _subExternalAgent = this->create_subscription<ctr_msgs::msg::State>("external_agent/state/"+robotToken,
@@ -159,4 +182,13 @@ void BehavioralNode::holdBall(bool turnOn) {
     cmd.header.stamp = this->get_clock()->now();
     send_command(cmd);
   }
+}
+
+void BehavioralNode::publish_mystate(const ctr_msgs::msg::State &msg) {
+  _pubState->publish(msg);
+}
+
+void BehavioralNode::hearState(ctr_msgs::msg::State::SharedPtr msg) {
+  int state = stringStateToInt(msg->state);
+  _stateTable.insert(msg->id, state);
 }
