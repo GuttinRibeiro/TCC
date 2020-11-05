@@ -39,7 +39,7 @@ void SSL_BehavioralNode::configure() {
 }
 
 void SSL_BehavioralNode::run() {
-//  std::cout << "SSL Controller running!\n";
+  std::cout << "SSL Controller is running!\n";
   _current->runState();
 }
 

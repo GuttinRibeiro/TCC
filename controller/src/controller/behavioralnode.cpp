@@ -6,7 +6,7 @@ using namespace std::chrono_literals;
 
 static const rmw_qos_profile_t rmw_qos_custom_profile {
     RMW_QOS_POLICY_HISTORY_KEEP_LAST,
-    100,
+    1000,
     RMW_QOS_POLICY_RELIABILITY_RELIABLE,
     RMW_QOS_POLICY_DURABILITY_VOLATILE,
     RMW_QOS_DEADLINE_DEFAULT,

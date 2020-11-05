@@ -24,7 +24,7 @@ QLinkedList<Vector> PF::calculatePath(Vector currentPosition, float currentOrien
   // Trivial case
   if(destination == currentPosition) {
     path.append(destination);
-//    std::cout << "[PF] Robot is already clone enough to its destination\n";
+    std::cout << "[PF] Robot is already close enough to its destination\n";
   }
 
   while(path.contains(destination) == false) {
@@ -34,7 +34,7 @@ QLinkedList<Vector> PF::calculatePath(Vector currentPosition, float currentOrien
     // Sum all repulsive components
     for (int j = 0; j < obstacles.size(); j++) {
       if(Utils::distance(currentPosition, obstacles.at(j)) < MAX_DISTANCE) {
-        resultantForce = resultantForce + calculateForce(currentPosition, obstacles.at(j));
+        resultantForce = resultantForce - calculateForce(currentPosition, obstacles.at(j));
       }
     }
 
@@ -44,6 +44,7 @@ QLinkedList<Vector> PF::calculatePath(Vector currentPosition, float currentOrien
     // Check if the resultant force may lead the robot to a collision with an obstacle
     for (int j = 0; j < obstacles.size(); j++) {
       if(isOnCollisionRoute(currentPosition, destination, resultantForce, obstacles.at(j), 0.2f)) {
+        std::cout << "Collision check\n";
         Vector obstacle = obstacles.at(j);
         Vector reference = obstacle - currentPosition;
         float alpha = acos(Utils::scalarProduct(resultantForce, reference)/(resultantForce.norm()*reference.norm()));
@@ -63,10 +64,10 @@ QLinkedList<Vector> PF::calculatePath(Vector currentPosition, float currentOrien
     Vector nextPosition = currentPosition+(resultantForce*RESOLUTION);
 
     if(Utils::distance(nextPosition, destination) < RESOLUTION) {
-//      std::cout << "[PF] Operation completed!\n";
+      std::cout << "[PF] Operation completed!\n";
       path.append(destination);
     } else {
-//      std::cout << "[PF] Appending position " << nextPosition.x() << ", " << nextPosition.y() << "\n";
+      std::cout << "[PF] Appending position " << nextPosition.x() << ", " << nextPosition.y() << "\n";
       path.append(nextPosition);
       currentPosition = nextPosition;
     }
@@ -80,7 +81,7 @@ Vector PF::calculateForce(Vector robot, Vector element) {
   Vector ret = element - robot;
   float norm = ret.norm();
   ret = ret/norm;
-  ret = ret * (_k/pow(distance-_y_shift, _factor) + _y_shift);
+  ret = ret * (_k/pow(distance-_x_shift, _factor) + _y_shift);
   return ret;
 }
 

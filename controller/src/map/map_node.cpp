@@ -23,6 +23,7 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   // Vision
   auto vision_opt = rclcpp::SubscriptionOptions();
   vision_opt.callback_group = _callback_group_vision;
+  vision_opt.topic_stats_options.publish_period = std::chrono::minutes(2);
   vision_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
   vision_opt.topic_stats_options.publish_topic = "/vision/"+robotToken+"/statistics";
   _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken,
