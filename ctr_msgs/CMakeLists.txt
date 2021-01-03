@@ -13,21 +13,23 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(ctr_msgs
    srv/State.srv
    srv/Elementrequest.srv
-   srv/Inforequest.srv
+   srv/Idrequest.srv
    srv/Fieldinformationrequest.srv
    msg/Command.msg
-   msg/Ball.msg
    msg/Robot.msg
    msg/Visionpkg.msg
    msg/Position.msg
    msg/Velocity.msg
    msg/Navigation.msg
    msg/Path.msg
+   msg/State.msg
    action/Nav.action
+   DEPENDENCIES std_msgs
 )
 
 ament_export_dependencies(rosidl_default_runtime)

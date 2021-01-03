@@ -13,7 +13,7 @@ private:
 public:
   WorldMap(float persistense_time) {
     _mutex.unlock();
-    _threshold = persistense_time/1000;
+    _threshold = persistense_time;
   }
   void checkElements(const double &now) {
     _mutex.lock();
@@ -26,7 +26,7 @@ public:
       for(int j = 0; j < ids.size(); j++) {
         Element elem = group.value(ids[j]);
         // If data are too old:
-        if(now - elem.position().timestamp() > _threshold) {
+        if(now - static_cast<double>(elem.position().timestamp()) > _threshold) {
           group.remove(elem.id());
         }
       }

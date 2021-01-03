@@ -5,7 +5,6 @@
 #include <ctime>
 #include "robocup_ssl_client.h"
 #include "rclcpp/rclcpp.hpp"
-#include "ctr_msgs/msg/ball.hpp"
 #include "ctr_msgs/msg/robot.hpp"
 #include "ctr_msgs/msg/visionpkg.hpp"
 #include "position.hpp"

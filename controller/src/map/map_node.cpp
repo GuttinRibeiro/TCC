@@ -10,8 +10,7 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   _wm = wm;
   _side = side;
   _field = field;
-  _time_now = 0.0;
-  clock_gettime(CLOCK_REALTIME, &_start);
+  _time_now = this->get_clock()->now().seconds();
 
   std::string robotToken = team+"_"+std::to_string(id);
 
@@ -24,15 +23,25 @@ Map_Node::Map_Node(const std::string team, const int id, const std::string side,
   // Vision
   auto vision_opt = rclcpp::SubscriptionOptions();
   vision_opt.callback_group = _callback_group_vision;
-  _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken, rclcpp::QoS(10),
+  vision_opt.topic_stats_options.publish_period = std::chrono::minutes(2);
+  vision_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
+  vision_opt.topic_stats_options.publish_topic = "/vision/"+robotToken+"/statistics";
+  _subVision = this->create_subscription<ctr_msgs::msg::Visionpkg>("vision/"+robotToken,
+                                                                 rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.depth), rmw_qos_profile_sensor_data),
                                                                  std::bind(&Map_Node::visionCallback, this, std::placeholders::_1),
                                                                  vision_opt);
+
+
+  auto path_opt = rclcpp::SubscriptionOptions();
+  path_opt.callback_group = _callback_group_vision;
+  path_opt.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;
+  path_opt.topic_stats_options.publish_topic = "/vision/path/"+robotToken+"/statistics";
   _subPath = this->create_subscription<ctr_msgs::msg::Path>("vision/path/"+robotToken, rclcpp::QoS(10),
                                                                  std::bind(&Map_Node::pathUpdateCallback, this, std::placeholders::_1),
-                                                                 vision_opt);
+                                                                 path_opt);
 
   // Information services
-  _infoService = this->create_service<ctr_msgs::srv::Inforequest>("map_service/"+robotToken+"/info",
+  _infoService = this->create_service<ctr_msgs::srv::Idrequest>("map_service/"+robotToken+"/id",
                                                                   std::bind(&Map_Node::getInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                                                                   rmw_qos_profile_services_default,
                                                                   _callback_information_services);
@@ -53,12 +62,9 @@ Map_Node::~Map_Node() {
 }
 
 void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
-  // Synchronize internal timer using messages timestamp
-  _time_now = msg->timestamp;
-
   //Update ball position:
   if(msg->balls.size() > 0) {
-    _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->timestamp, false));
+    _wm->updateElement(Groups::BALL, 0, 0.01, 0.0, Vector(msg->balls.at(0).x, msg->balls.at(0).y, msg->header.stamp.sec, false, msg->balls.at(0).confidence));
   }
 
   //Update robots:
@@ -67,14 +73,11 @@ void Map_Node::visionCallback(const ctr_msgs::msg::Visionpkg::SharedPtr msg) {
     msg->robots.pop_back();
     // Check team color:
     if(robot.team == "blue") {
-      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false));
+      _wm->updateElement(Groups::BLUE, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->header.stamp.sec, false, robot.pos.confidence));
     } else if(robot.team == "yellow") {
-      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.x, robot.y, msg->timestamp, false));
+      _wm->updateElement(Groups::YELLOW, robot.id, 0.09, robot.orientation, Vector(robot.pos.x, robot.pos.y, msg->header.stamp.sec, false, robot.pos.confidence));
     }
   }
-
-  // Init timer
-  clock_gettime(CLOCK_REALTIME, &_start);
 }
 
 void Map_Node::pathUpdateCallback(const ctr_msgs::msg::Path::SharedPtr msg) {
@@ -100,17 +103,14 @@ void Map_Node::configure() {
 }
 
 void Map_Node::run() {
-  // Stop timer
-  clock_gettime(CLOCK_REALTIME, &_stop);
-  // Count how many seconds have passed since last packet received
-  _time_now += ((_stop.tv_sec*1E9+_stop.tv_nsec)-(_start.tv_sec*1E9+_start.tv_nsec))/1E9;
   // Check all timestamps and remove old information
+  _time_now = this->get_clock()->now().seconds();
   _wm->checkElements(_time_now);
 }
 
 void Map_Node::getInformation(const std::shared_ptr<rmw_request_id_t> request_header,
-                              const std::shared_ptr<ctr_msgs::srv::Inforequest::Request> request,
-                              const std::shared_ptr<ctr_msgs::srv::Inforequest::Response> response) {
+                              const std::shared_ptr<ctr_msgs::srv::Idrequest::Request> request,
+                              const std::shared_ptr<ctr_msgs::srv::Idrequest::Response> response) {
   (void) request_header;
   QList<qint8> ids = _wm->getGroup(request->group).keys();
   for(int i = 0; i < ids.size(); i++) {

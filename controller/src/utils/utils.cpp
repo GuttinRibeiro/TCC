@@ -26,12 +26,12 @@ float Utils::scalarProduct(Vector A, Vector B) {
 }
 
 Vector Utils::projectPointAtLine(Vector p1, Vector p2, Vector point) {
-    Vector a(point.x()-p1.x(), point.y()-p1.y(), 0.0, false);
-    Vector b(p2.x()-p1.x(), p2.y()-p1.y(), 0.0, false);
+    Vector a(point.x()-p1.x(), point.y()-p1.y(), 0.0, 0.0, false);
+    Vector b(p2.x()-p1.x(), p2.y()-p1.y(), 0.0, 0.0, false);
     float bModule = sqrt(pow(b.x(),2)+pow(b.y(),2));
-    Vector bUnitary(b.x()/bModule, b.y()/bModule, 0.0, false);
+    Vector bUnitary(b.x()/bModule, b.y()/bModule, 0.0, 0.0, false);
     float scalar = Utils::scalarProduct(a, bUnitary);
-    return Vector(p1.x()+scalar*bUnitary.x(), p1.y()+scalar*bUnitary.y(), 0.0, false);
+    return Vector(p1.x()+scalar*bUnitary.x(), p1.y()+scalar*bUnitary.y(), 0.0, 0.0, false);
 }
 
 float Utils::distanceToLine(Vector p1, Vector p2, Vector point) {
@@ -63,6 +63,6 @@ Vector Utils::rotateVectorAroundZ(Vector v, float angle) {
 Vector Utils::threePoints(const Vector &near, const Vector &far, float distance, float beta) {
   double alpha = atan2(far.y()-near.y(), far.x()-near.x());
   double gama = alpha+beta;
-  Vector p(near.x()+distance*cos(gama), near.y()+distance*sin(gama), 0.0, false);
+  Vector p(near.x()+distance*cos(gama), near.y()+distance*sin(gama), 0.0, 0.0, false);
   return p;
 }

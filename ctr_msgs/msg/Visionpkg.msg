@@ -1,3 +1,3 @@
+std_msgs/Header header
 Robot[] robots
-Ball[] balls
-float64 timestamp
+Position[] balls
